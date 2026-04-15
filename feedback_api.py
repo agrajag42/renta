@@ -18,7 +18,7 @@ ACCOUNTS = {
     "family": "family",
     "admin": "admin",
 }
-LOGIN_URL = "/login"
+LOGIN_URL = "/"
 
 
 def _verify_session(token):
