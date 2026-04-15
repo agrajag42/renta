@@ -113,11 +113,11 @@ async def get_feedback(request: Request):
     return JSONResponse({"feedback": entries, "count": len(entries)})
 
 
-@app.get("/friends/renta")
-@app.get("/friends/renta/")
-@app.get("/friends/renta/{path:path}")
-@app.get("/")
-async def serve_app(request: Request, path: str = ""):
+@app.api_route("/friends/renta", methods=["GET"])
+@app.api_route("/friends/renta/", methods=["GET"])
+@app.api_route("/", methods=["GET"])
+async def serve_app(request: Request):
+    print(f"SERVE_APP hit: path={request.url.path}", flush=True)
     if not _check_auth(request):
         return RedirectResponse(url=LOGIN_URL, status_code=302)
     return HTMLResponse(_index_html)
