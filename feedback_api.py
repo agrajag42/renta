@@ -6,7 +6,6 @@ import base64
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -19,6 +18,15 @@ ACCOUNTS = {
     "admin": "admin",
 }
 LOGIN_URL = "/"
+INDEX_PATH = "/usr/share/nginx/html/friends/renta/index.html"
+
+# Load index.html at startup
+_index_html = ""
+try:
+    with open(INDEX_PATH, "r") as f:
+        _index_html = f.read()
+except FileNotFoundError:
+    _index_html = "<h1>index.html not found</h1>"
 
 
 def _verify_session(token):
@@ -51,38 +59,17 @@ def _check_auth(request: Request):
     return None
 
 
-@app.middleware("http")
-async def auth_middleware(request: Request, call_next):
-    path = request.url.path
-
-    # Health check -- no auth needed
-    if path == "/api/health":
-        return await call_next(request)
-
-    # Strip /friends/renta prefix if present (Firebase sends full path)
-    if path.startswith("/friends/renta"):
-        stripped = path[len("/friends/renta"):] or "/"
-        request.scope["path"] = stripped
-
-    # Check auth for everything else
-    path = request.scope["path"]
-    if path.startswith("/api/"):
-        # API endpoints: check auth
-        user = _check_auth(request)
-        if not user:
-            return JSONResponse({"error": "unauthorized"}, status_code=401)
-        return await call_next(request)
-
-    user = _check_auth(request)
-    if not user:
-        return_path = str(request.url)
-        return RedirectResponse(url=f"{LOGIN_URL}", status_code=302)
-
-    return await call_next(request)
+@app.get("/api/health")
+async def health():
+    return JSONResponse({"status": "ok"})
 
 
 @app.post("/api/feedback")
+@app.post("/friends/renta/api/feedback")
 async def post_feedback(request: Request):
+    if not _check_auth(request):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+
     try:
         body = await request.json()
     except Exception:
@@ -95,10 +82,8 @@ async def post_feedback(request: Request):
         "received_at": datetime.now(timezone.utc).isoformat(),
     }
 
-    # Log to stdout as JSON line -- captured by Cloud Logging
     print(json.dumps({"type": "feedback", **entry}), flush=True)
 
-    # Also append to local file (ephemeral, but useful for debugging)
     try:
         with open("/tmp/feedback.json", "a") as f:
             f.write(json.dumps(entry) + "\n")
@@ -109,6 +94,7 @@ async def post_feedback(request: Request):
 
 
 @app.get("/api/feedback")
+@app.get("/friends/renta/api/feedback")
 async def get_feedback(request: Request):
     token = request.query_params.get("token", "")
     if token != "renta-feedback-2026":
@@ -127,10 +113,11 @@ async def get_feedback(request: Request):
     return JSONResponse({"feedback": entries, "count": len(entries)})
 
 
-@app.get("/api/health")
-async def health():
-    return JSONResponse({"status": "ok"})
-
-
-# Serve static files (index.html) for everything else
-app.mount("/", StaticFiles(directory="/usr/share/nginx/html/friends/renta", html=True), name="static")
+@app.get("/friends/renta")
+@app.get("/friends/renta/")
+@app.get("/friends/renta/{path:path}")
+@app.get("/")
+async def serve_app(request: Request, path: str = ""):
+    if not _check_auth(request):
+        return RedirectResponse(url=LOGIN_URL, status_code=302)
+    return HTMLResponse(_index_html)
