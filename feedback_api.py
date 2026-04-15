@@ -39,7 +39,7 @@ def _verify_session(token):
 
 def _check_auth(request: Request):
     """Return username if authenticated at friends tier or above, else None."""
-    token = request.cookies.get("session")
+    token = request.cookies.get("__session")
     username = _verify_session(token)
     if not username:
         return None
