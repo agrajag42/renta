@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renta -- Is Your Property Investment Worth It?</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   CANDY PASTEL THEME
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-start: #FFF5EE;
+  --bg-end: #F0E6FF;
+  --white: #FFFFFF;
+  --lavender: #7C6FE0;
+  --lavender-light: #9B91E8;
+  --lavender-bg: #F3F1FD;
+  --peach: #FF9F7C;
+  --peach-light: #FFB99A;
+  --peach-bg: #FFF0EB;
+  --mint: #6ECFB2;
+  --mint-light: #8EDAC5;
+  --mint-bg: #EDFAF5;
+  --rose: #FF8FA3;
+  --rose-light: #FFB0BF;
+  --rose-bg: #FFF0F3;
+  --text: #2D2B55;
+  --text-medium: #5B5880;
+  --text-light: #9391B0;
+  --shadow: rgba(124, 111, 224, 0.1);
+  --shadow-lg: rgba(124, 111, 224, 0.15);
+  --border: #E8E6F0;
+}
+
+body {
+  background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 50%, var(--bg-start) 100%);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---- HEADER ---- */
+header {
+  text-align: center;
+  padding: 48px 0 32px;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--lavender), var(--peach));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+
+.subtitle { font-size: 1.1rem; color: var(--text-light); font-weight: 400; }
+
+/* Currency switcher */
+.currency-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.currency-toggle {
+  display: flex;
+  background: var(--white);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.currency-toggle button {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  color: var(--text-light);
+}
+
+.currency-toggle button.active {
+  background: linear-gradient(135deg, var(--lavender), var(--peach));
+  color: white;
+}
+
+.fx-rate {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.fx-rate input {
+  width: 70px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--text);
+}
+
+/* ---- CARDS ---- */
+.card-stack { display: flex; flex-direction: column; gap: 24px; margin: 28px 0; }
+
+.card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 24px var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px var(--shadow-lg);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.card-emoji {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.card.property .card-emoji { background: var(--peach-bg); }
+.card.investment .card-emoji { background: var(--lavender-bg); }
+.card.tax .card-emoji { background: var(--mint-bg); }
+.card.housing .card-emoji { background: var(--rose-bg); }
+
+.card h3 { font-size: 1.15rem; font-weight: 700; }
+.card.property h3 { color: var(--peach); }
+.card.investment h3 { color: var(--lavender); }
+.card.tax h3 { color: var(--mint); }
+.card.housing h3 { color: var(--rose); }
+
+/* ---- FORM FIELDS ---- */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+
+.input-group { position: relative; }
+.input-group.full { grid-column: 1 / -1; }
+
+.input-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.input-wrap { display: flex; align-items: center; gap: 6px; }
+
+.currency-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-light);
+  background: var(--lavender-bg);
+  padding: 2px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.input-group input, .input-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  color: var(--text);
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-group input:focus, .input-group select:focus {
+  outline: none;
+  border-color: var(--lavender);
+  box-shadow: 0 0 0 4px rgba(124, 111, 224, 0.1);
+}
+
+.input-group input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  border: none;
+  background: var(--border);
+  padding: 0;
+}
+
+.input-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--lavender), var(--peach));
+  cursor: pointer;
+  box-shadow: 0 2px 6px var(--shadow);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.range-labels .current { font-weight: 700; color: var(--lavender); }
+
+/* Help bubble */
+.help-bubble {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: var(--lavender-bg);
+  color: var(--lavender);
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-bubble:hover {
+  background: var(--lavender);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* ELI5 explanations */
+.eli5 {
+  display: none;
+  background: linear-gradient(135deg, var(--lavender-bg), var(--peach-bg));
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-top: 8px;
+  font-size: 0.88rem;
+  color: var(--text-medium);
+  line-height: 1.6;
+  grid-column: 1 / -1;
+  animation: slideIn 0.3s ease;
+}
+
+.eli5.show { display: block; }
+.eli5 strong { color: var(--lavender); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Collapsible sections */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 10px 16px;
+  border: 2px solid var(--lavender-bg);
+  background: var(--lavender-bg);
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--lavender);
+  grid-column: 1 / -1;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.section-toggle:hover {
+  background: #EAE7FC;
+  border-color: var(--lavender-light);
+}
+
+.section-toggle .arrow {
+  transition: transform 0.2s;
+  font-size: 0.7rem;
+}
+
+.section-toggle.open .arrow { transform: rotate(90deg); }
+
+.collapsible {
+  display: none;
+  grid-column: 1 / -1;
+}
+
+.collapsible.open {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+
+/* ---- HERO NUMBER ---- */
+.hero-number { text-align: center; margin: 40px 0 24px; }
+
+.big-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--lavender), var(--peach));
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 8px 40px rgba(124, 111, 224, 0.3);
+  animation: floatIn 0.6s ease;
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: scale(0.85) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.big-number { font-size: 3.2rem; font-weight: 800; line-height: 1; }
+.big-label { font-size: 0.85rem; font-weight: 600; opacity: 0.9; margin-top: 2px; }
+.hero-subtitle { color: var(--text-light); margin-top: 14px; font-size: 1rem; }
+.hero-context { color: var(--text-light); font-size: 0.85rem; margin-top: 4px; }
+
+/* ---- STAT PILLS ---- */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 20px 0 32px;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 12px 20px;
+  text-align: center;
+  box-shadow: 0 2px 12px var(--shadow);
+  min-width: 130px;
+  flex: 1;
+  max-width: 200px;
+}
+
+.stat-value { font-size: 1.4rem; font-weight: 800; }
+.stat-value.mint { color: var(--mint); }
+.stat-value.peach { color: var(--peach); }
+.stat-value.lavender { color: var(--lavender); }
+.stat-value.rose { color: var(--rose); }
+
+.stat-secondary {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+
+/* ---- CHART ---- */
+.chart-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px 28px 20px;
+  box-shadow: 0 4px 24px var(--shadow);
+  margin: 28px 0;
+}
+
+.chart-card h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chart-controls button {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chart-controls button.active {
+  border-color: var(--lavender);
+  color: var(--lavender);
+  background: var(--lavender-bg);
+}
+
+.chart-container { position: relative; height: 320px; }
+
+/* ---- TAX PILLS ---- */
+.tax-section { margin: 32px 0; }
+.tax-section h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+
+.tax-pills { display: flex; flex-direction: column; gap: 10px; }
+
+.tax-pill {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 12px var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.tax-pill:hover { transform: translateX(3px); }
+
+.tax-pill-left { display: flex; align-items: center; gap: 12px; }
+
+.tax-flag {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.tax-flag.es { background: var(--peach-bg); }
+.tax-flag.us { background: var(--lavender-bg); }
+
+.tax-name { font-weight: 700; font-size: 0.92rem; }
+.tax-desc { font-size: 0.78rem; color: var(--text-light); margin-top: 1px; }
+
+.tax-amount { font-weight: 800; font-size: 1.05rem; white-space: nowrap; }
+.tax-amount.negative { color: var(--rose); }
+.tax-amount.positive { color: var(--mint); }
+
+.tax-eli5 {
+  display: none;
+  background: linear-gradient(135deg, var(--mint-bg), var(--lavender-bg));
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-top: -2px;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+  color: var(--text-medium);
+  line-height: 1.6;
+  animation: slideIn 0.3s ease;
+}
+
+.tax-eli5.show { display: block; }
+.tax-eli5 strong { color: var(--lavender); }
+
+.tax-total-bar {
+  background: linear-gradient(135deg, var(--lavender-bg), var(--peach-bg));
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-weight: 800;
+}
+
+/* ---- CASHFLOW TABLE ---- */
+.cashflow-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 4px 24px var(--shadow);
+  margin: 28px 0;
+  overflow-x: auto;
+}
+
+.cashflow-card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+
+.cashflow-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.cashflow-table th {
+  text-align: right;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-light);
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+.cashflow-table th:first-child { text-align: left; }
+
+.cashflow-table td {
+  text-align: right;
+  padding: 8px 10px;
+  border-bottom: 1px solid #F3F1FD;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cashflow-table td:first-child {
+  text-align: left;
+  color: var(--text-medium);
+  font-weight: 700;
+}
+
+.cashflow-table .positive { color: var(--mint); }
+.cashflow-table .negative { color: var(--rose); }
+.cashflow-table .highlight { background: var(--lavender-bg); }
+
+/* ---- FEEDBACK ---- */
+.feedback-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 4px 24px var(--shadow);
+  margin: 40px 0;
+  text-align: center;
+}
+
+.feedback-card h2 { font-size: 1.3rem; margin-bottom: 6px; }
+.feedback-card .desc { color: var(--text-light); margin-bottom: 16px; font-size: 0.95rem; }
+
+.feedback-card textarea {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 90px;
+  color: var(--text);
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+
+.feedback-card textarea:focus {
+  outline: none;
+  border-color: var(--lavender);
+  box-shadow: 0 0 0 4px rgba(124, 111, 224, 0.1);
+}
+
+.feedback-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.feedback-row input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.feedback-row input:focus {
+  outline: none;
+  border-color: var(--lavender);
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, var(--lavender), var(--peach));
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 111, 224, 0.3);
+}
+
+.btn-gradient:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.feedback-status {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.feedback-status.success { color: var(--mint); }
+.feedback-status.error { color: var(--rose); }
+
+/* ---- FOOTER ---- */
+footer {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--text-light);
+  font-size: 0.82rem;
+}
+
+footer a { color: var(--lavender); text-decoration: none; }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+  .input-grid { grid-template-columns: 1fr; }
+  .collapsible.open { grid-template-columns: 1fr; }
+  h1 { font-size: 2.2rem; }
+  .container { padding: 0 16px; }
+  .stats-row { gap: 10px; }
+  .stat-pill { min-width: 100px; padding: 10px 14px; }
+  .stat-value { font-size: 1.2rem; }
+  .currency-bar { flex-wrap: wrap; }
+  .feedback-row { flex-direction: column; }
+  .card { padding: 20px; }
+}
+
+@media (max-width: 480px) {
+  .stats-row { flex-direction: column; align-items: stretch; }
+  .stat-pill { max-width: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header>
+  <h1>Renta</h1>
+  <p class="subtitle">is your rental property investment worth it?</p>
+  <div class="currency-bar">
+    <label style="font-size:0.85rem;font-weight:700;color:var(--text-light)">Display currency:</label>
+    <select id="currencySelect" onchange="switchCurrency(this.value)" style="padding:6px 12px;border:2px solid var(--border);border-radius:10px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.85rem;color:var(--text);background:var(--white)">
+      <option value="EUR">EUR -- Euro</option>
+      <option value="USD">USD -- US Dollar</option>
+      <option value="GBP">GBP -- British Pound</option>
+      <option value="CHF">CHF -- Swiss Franc</option>
+      <option value="SEK">SEK -- Swedish Krona</option>
+      <option value="NOK">NOK -- Norwegian Krone</option>
+      <option value="DKK">DKK -- Danish Krone</option>
+      <option value="PLN">PLN -- Polish Zloty</option>
+      <option value="CZK">CZK -- Czech Koruna</option>
+      <option value="JPY">JPY -- Japanese Yen</option>
+    </select>
+    <div class="fx-rate">
+      1 EUR = <input type="number" id="fxRate" value="1.08" step="0.01" min="0.01" max="999" onchange="recalculate()"> <span id="fxCurrencyLabel">USD</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     PROPERTY INPUTS
+     ============================================================ -->
+<div class="card-stack">
+  <div class="card property">
+    <div class="card-header">
+      <div class="card-emoji">&#127968;</div>
+      <h3>Tell us about the property</h3>
+    </div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label>Purchase Price</label>
+        <div class="input-wrap">
+          <span class="currency-label" data-currency>EUR</span>
+          <input type="number" id="purchasePrice" value="280000" min="0" step="1000" onchange="recalculate()">
+          <button class="help-bubble" onclick="toggleEli5('eli5-price')">?</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Region</label>
+        <div class="input-wrap">
+          <select id="region" onchange="recalculate()">
+            <option value="valencia">Valencia (ITP: 10%)</option>
+            <option value="madrid">Madrid (ITP: 6%)</option>
+            <option value="catalonia">Catalonia (ITP: 10%)</option>
+            <option value="andalusia">Andalusia (ITP: 7%)</option>
+            <option value="balearic">Balearic Islands (ITP: 8%)</option>
+            <option value="canary">Canary Islands (ITP: 6.5%)</option>
+            <option value="basque">Basque Country (ITP: 7%)</option>
+            <option value="galicia">Galicia (ITP: 9%)</option>
+            <option value="aragon">Aragon (ITP: 8%)</option>
+            <option value="murcia">Murcia (ITP: 8%)</option>
+            <option value="castilla_leon">Castilla y Leon (ITP: 8%)</option>
+            <option value="castilla_mancha">Castilla-La Mancha (ITP: 9%)</option>
+            <option value="extremadura">Extremadura (ITP: 8%)</option>
+            <option value="asturias">Asturias (ITP: 8%)</option>
+            <option value="cantabria">Cantabria (ITP: 10%)</option>
+            <option value="navarra">Navarra (ITP: 6%)</option>
+            <option value="rioja">La Rioja (ITP: 7%)</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-region')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-price">
+        <strong>Think of it like this:</strong> The asking price in euros. On top of this, you'll pay closing costs (transfer tax, notary, registry, lawyer) which can run 8-13% depending on the region. We calculate those automatically.
+      </div>
+      <div class="eli5" id="eli5-region">
+        <strong>Think of it like this:</strong> Spain is like the US with states -- each region has its own property transfer tax rate. Madrid is cheapest at 6%, while Valencia and Catalonia charge 10%. On a 280K property, that's an 11,200 EUR difference just in tax!
+      </div>
+
+      <div class="input-group">
+        <label>Monthly Rent</label>
+        <div class="input-wrap">
+          <span class="currency-label" data-currency>EUR</span>
+          <input type="number" id="monthlyRent" value="1400" min="0" step="50" onchange="recalculate()">
+          <button class="help-bubble" onclick="toggleEli5('eli5-rent')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-rent">
+        <strong>Think of it like this:</strong> What you'd charge tenants per month. Check Idealista or Fotocasa for real comps in your area. Be honest with yourself -- overestimating rent is the #1 mistake new investors make.
+      </div>
+
+      <div class="input-group">
+        <label>New Build?</label>
+        <div class="input-wrap">
+          <select id="newBuild" onchange="recalculate()">
+            <option value="no">Resale (ITP transfer tax)</option>
+            <option value="yes">New Build (10% IVA + AJD)</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-newbuild')">?</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Occupancy Rate: <span id="occupancyVal" class="current">85%</span></label>
+        <div class="input-wrap" style="flex-direction:column;align-items:stretch;gap:2px">
+          <input type="range" id="occupancy" min="0" max="100" value="85" oninput="document.getElementById('occupancyVal').textContent=this.value+'%'; recalculate()">
+          <div class="range-labels"><span>0%</span><span>100%</span></div>
+        </div>
+        <button class="help-bubble" onclick="toggleEli5('eli5-occupancy')" style="position:absolute;top:0;right:0">?</button>
+      </div>
+      <div class="eli5" id="eli5-newbuild">
+        <strong>Resale vs New Build matters for taxes.</strong> Resale properties pay ITP (transfer tax, 6-10% depending on region). New builds pay 10% IVA (like VAT) plus AJD stamp duty (0.5-1.5%). For most buyers, resale is more common. New builds are from developers only.
+      </div>
+      <div class="eli5" id="eli5-occupancy">
+        <strong>How often will it actually be rented?</strong> Long-term rentals typically see 90-95% occupancy. Short-term/Airbnb is more like 60-75% in popular areas. Mid-term falls around 80-85%. Factor in time between tenants, maintenance gaps, and slow seasons.
+      </div>
+
+      <!-- Customize property details (collapsible) -->
+      <button class="section-toggle" id="propDetailsToggle" onclick="toggleSection('propDetails')">
+        <span class="arrow">&#9654;</span> Customize property details
+      </button>
+      <div class="collapsible" id="propDetails">
+        <div class="input-group">
+          <label>Rental Type</label>
+          <div class="input-wrap">
+            <select id="rentalType" onchange="recalculate()">
+              <option value="longterm">Long-term (12+ months)</option>
+              <option value="shortterm">Short-term / Airbnb</option>
+              <option value="midterm">Mid-term (1-12 months)</option>
+            </select>
+            <button class="help-bubble" onclick="toggleEli5('eli5-rentaltype')">?</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Annual Appreciation: <span id="appreciationVal" class="current">2%</span></label>
+          <div style="position:relative">
+            <input type="range" id="appreciation" min="0" max="10" value="2" step="0.5" oninput="document.getElementById('appreciationVal').textContent=this.value+'%'; recalculate()">
+            <div class="range-labels"><span>0%</span><span>10%</span></div>
+          </div>
+          <button class="help-bubble" onclick="toggleEli5('eli5-appreciation')" style="position:absolute;top:0;right:0">?</button>
+        </div>
+        <div class="eli5" id="eli5-rentaltype">
+          <strong>Think of it like this:</strong> Airbnb can earn more per night but has higher vacancy, bigger management costs, and Spain has strict rules (some cities ban it!). Long-term tenants are steady and low-hassle. Mid-term is the middle ground -- furnished rentals to digital nomads.
+        </div>
+        <div class="eli5" id="eli5-appreciation">
+          <strong>How fast does property value grow?</strong> Spanish property has historically appreciated 1-3% per year on average. Major cities (Madrid, Barcelona) trend higher. Rural and coastal areas can be flat or volatile. 2% is a conservative default. Don't count on appreciation -- treat it as a bonus.
+        </div>
+        <div class="input-group">
+          <label>Management Fee: <span id="mgmtFeeVal" class="current">15%</span></label>
+          <div style="position:relative">
+            <input type="range" id="mgmtFee" min="0" max="30" value="15" oninput="document.getElementById('mgmtFeeVal').textContent=this.value+'%'; recalculate()">
+            <div class="range-labels"><span>0%</span><span>30%</span></div>
+          </div>
+          <button class="help-bubble" onclick="toggleEli5('eli5-mgmt')" style="position:absolute;top:0;right:0">?</button>
+        </div>
+        <div class="eli5" id="eli5-mgmt">
+          <strong>Property managers handle the headaches.</strong> They find tenants, collect rent, handle repairs, and deal with emergencies. Long-term management typically costs 8-15% of rent. Short-term/Airbnb management runs 20-30% because there's way more work (cleaning, guest communication, key handoffs). Set to 0% if you'd manage it yourself.
+        </div>
+      </div>
+
+      <!-- Mortgage section (collapsible) -->
+      <button class="section-toggle" id="mortgageToggle" onclick="toggleSection('mortgage')">
+        <span class="arrow">&#9654;</span> Mortgage (optional)
+      </button>
+      <div class="collapsible" id="mortgage">
+        <div class="input-group">
+          <label>Loan-to-Value (LTV)</label>
+          <div class="input-wrap">
+            <input type="number" id="ltv" value="60" min="0" max="80" step="5" onchange="recalculate()">
+            <span style="font-size:0.85rem;color:var(--text-light)">%</span>
+            <button class="help-bubble" onclick="toggleEli5('eli5-ltv')">?</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Interest Rate</label>
+          <div class="input-wrap">
+            <input type="number" id="mortgageRate" value="3.5" min="0" max="15" step="0.1" onchange="recalculate()">
+            <span style="font-size:0.85rem;color:var(--text-light)">%</span>
+            <button class="help-bubble" onclick="toggleEli5('eli5-mortrate')">?</button>
+          </div>
+        </div>
+        <div class="eli5" id="eli5-ltv">
+          <strong>Think of it like this:</strong> Spanish banks typically lend 60-70% to non-residents. So on a 280K property, the bank would lend you ~168K-196K, and you'd need the rest as a down payment. Residents can sometimes get up to 80%.
+        </div>
+        <div class="eli5" id="eli5-mortrate">
+          <strong>Spanish mortgage rates (2025-2026).</strong> Non-residents typically get variable rates around Euribor + 1.5-2.5% (currently ~5-6% total) or fixed rates around 3-4.5%. Fixed is more predictable for planning. Shop around -- Sabadell, CaixaBank, Bankinter, and Santander are most active with non-resident mortgages.
+        </div>
+        <div class="input-group">
+          <label>Mortgage Term</label>
+          <div class="input-wrap">
+            <input type="number" id="mortgageTerm" value="20" min="5" max="30" step="1" onchange="recalculate()">
+            <span style="font-size:0.85rem;color:var(--text-light)">years</span>
+            <button class="help-bubble" onclick="toggleEli5('eli5-mortterm')">?</button>
+          </div>
+        </div>
+        <div class="eli5" id="eli5-mortterm">
+          <strong>How long to pay it off.</strong> Non-residents typically get 15-25 year terms. Most banks cap at age 70-75 at maturity. Longer terms mean lower monthly payments but more interest paid overall. 20 years is the sweet spot for most buyers.
+        </div>
+      </div>
+
+      <!-- More costs (collapsible) -->
+      <button class="section-toggle" id="costsToggle" onclick="toggleSection('costs')">
+        <span class="arrow">&#9654;</span> More costs (community, insurance, maintenance)
+      </button>
+      <div class="collapsible" id="costs">
+        <div class="input-group">
+          <label>Community Fees / month</label>
+          <div class="input-wrap">
+            <span class="currency-label" data-currency>EUR</span>
+            <input type="number" id="communityFees" value="100" min="0" step="10" onchange="recalculate()">
+            <button class="help-bubble" onclick="toggleEli5('eli5-community')">?</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Insurance / year</label>
+          <div class="input-wrap">
+            <span class="currency-label" data-currency>EUR</span>
+            <input type="number" id="insurance" value="350" min="0" step="50" onchange="recalculate()">
+            <button class="help-bubble" onclick="toggleEli5('eli5-insurance')">?</button>
+          </div>
+        </div>
+        <div class="eli5" id="eli5-community">
+          <strong>The comunidad de propietarios.</strong> If the property is an apartment, you'll pay monthly community fees for building maintenance, common areas, elevator, pool, etc. Ranges from 50/mo for a basic building to 200+/mo for complexes with pools and gardens. Houses/villas usually don't have this.
+        </div>
+        <div class="eli5" id="eli5-insurance">
+          <strong>Spanish home insurance (seguro del hogar).</strong> Covers building structure, contents, water damage, fire, and liability. Spanish banks require it if you have a mortgage. Budget 200-500/yr for an apartment, more for a house. Way cheaper than US homeowners insurance.
+        </div>
+        <div class="input-group">
+          <label>Maintenance Reserve</label>
+          <div class="input-wrap">
+            <input type="number" id="maintenancePct" value="1" min="0" max="5" step="0.5" onchange="recalculate()">
+            <span style="font-size:0.85rem;color:var(--text-light)">% of value/yr</span>
+            <button class="help-bubble" onclick="toggleEli5('eli5-maintenance')">?</button>
+          </div>
+        </div>
+        <div class="eli5" id="eli5-maintenance">
+          <strong>The 1% rule.</strong> A common rule of thumb: budget 1% of the property's value per year for repairs and maintenance (plumbing, appliances, paint, roof, etc). Newer properties need less, older ones need more. This isn't spent every year -- it averages out over time.
+        </div>
+        <div class="input-group">
+          <label>Gestor / Accountant / year</label>
+          <div class="input-wrap">
+            <span class="currency-label" data-currency>EUR</span>
+            <input type="number" id="gestorFee" value="500" min="0" step="50" onchange="recalculate()">
+            <button class="help-bubble" onclick="toggleEli5('eli5-gestor')">?</button>
+          </div>
+        </div>
+        <div class="eli5" id="eli5-gestor">
+          <strong>Think of it like this:</strong> A gestor is a Spanish administrative agent who handles your quarterly tax filings (IRNR) and other paperwork. If you own property in Spain as a non-resident, you basically need one. Budget 300-800 EUR/year.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ============================================================
+     HOUSING SITUATION
+     ============================================================ -->
+  <div class="card housing">
+    <div class="card-header">
+      <div class="card-emoji">&#127969;</div>
+      <h3>Would you live in this property?</h3>
+    </div>
+    <div class="input-grid">
+      <div class="input-group full">
+        <div class="input-wrap">
+          <select id="livingSituation" onchange="recalculate()" style="width:100%">
+            <option value="no">No -- I'd rent it out full time</option>
+            <option value="yes">Yes -- this would be my primary home</option>
+            <option value="partial">Partially -- I'd live there part of the year</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-living')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-living">
+        <strong>Think of it like this:</strong> If you'd live there, the "rent" you save by not paying someone else is part of the property's value. If you'd only live there part-time, we'll model the months you rent it out and the months you save on rent.
+      </div>
+      <div class="input-group" id="rentSavingsGroup" style="display:none">
+        <label>Rent you'd pay elsewhere / month</label>
+        <div class="input-wrap">
+          <span class="currency-label" data-currency>EUR</span>
+          <input type="number" id="rentSavings" value="1200" min="0" step="50" onchange="recalculate()">
+        </div>
+      </div>
+      <div class="input-group" id="monthsLivingGroup" style="display:none">
+        <label>Months / year you'd live there</label>
+        <input type="number" id="monthsLiving" value="6" min="1" max="12" step="1" onchange="recalculate()">
+      </div>
+    </div>
+  </div>
+
+<!-- ============================================================
+     INVESTMENT ALTERNATIVE
+     ============================================================ -->
+  <div class="card investment">
+    <div class="card-header" style="cursor:pointer" onclick="toggleSection('investmentBody')">
+      <div class="card-emoji">&#128200;</div>
+      <div style="flex:1">
+        <h3>What would you do with the money instead?</h3>
+        <div id="investmentSummary" style="font-size:0.85rem;color:var(--text-light);margin-top:2px">Comparing against: 60/40 Balanced at 7%/yr</div>
+      </div>
+      <span class="arrow" style="font-size:0.7rem;color:var(--text-light);transition:transform 0.2s" id="investmentBodyArrow">&#9654;</span>
+    </div>
+    <div class="collapsible" id="investmentBody">
+    <div class="input-grid">
+      <div class="input-group">
+        <label>Initial Lump Sum</label>
+        <div class="input-wrap">
+          <span class="currency-label" data-currency>EUR</span>
+          <input type="number" id="initialInvestment" value="" min="0" step="1000" onchange="recalculate()" placeholder="auto-calculated">
+          <button class="help-bubble" onclick="toggleEli5('eli5-lump')">?</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Monthly Contribution</label>
+        <div class="input-wrap">
+          <span class="currency-label" data-currency>EUR</span>
+          <input type="number" id="monthlyContribution" value="" min="0" step="100" onchange="recalculate()" placeholder="auto-calculated">
+          <button class="help-bubble" onclick="toggleEli5('eli5-monthly')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-lump">
+        <strong>Think of it like this:</strong> If you didn't buy the property, you'd have your down payment + closing costs sitting in cash. That's the lump sum you'd invest on day one. We auto-calculate this, but you can override it.
+      </div>
+      <div class="eli5" id="eli5-monthly">
+        <strong>Think of it like this:</strong> Your net monthly cash outflow from the property (mortgage + expenses - rent). If you didn't own it, you'd invest this amount each month instead. Auto-calculated, but overridable.
+      </div>
+
+      <div class="input-group">
+        <label>Investment Vehicle</label>
+        <div class="input-wrap">
+          <select id="investmentVehicle" onchange="updateReturnRate(); recalculate()">
+            <option value="sp500">S&P 500 Index (~10%/yr hist.)</option>
+            <option value="world">Total World Stock (~8%/yr hist.)</option>
+            <option value="balanced" selected>60/40 Balanced (~7%/yr hist.)</option>
+            <option value="hysa">High-Yield Savings (~4.5%)</option>
+            <option value="custom">Custom Return Rate</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-vehicle')">?</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Expected Annual Return</label>
+        <div class="input-wrap">
+          <input type="number" id="expectedReturn" value="7" min="0" max="30" step="0.1" onchange="recalculate()">
+          <span style="font-size:0.85rem;color:var(--text-light)">%</span>
+          <button class="help-bubble" onclick="toggleEli5('eli5-return')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-vehicle">
+        <strong>Think of it like this:</strong> What would you do with the money if you didn't buy property? The S&P 500 averaged ~10%/yr over 50 years. A 60/40 portfolio is more conservative. Past performance doesn't guarantee future results -- pick what matches your comfort level.
+      </div>
+      <div class="eli5" id="eli5-return">
+        <strong>What does this mean practically?</strong> At 7% annual return, your money roughly doubles every 10 years. At 10%, every 7 years. This is before inflation (~2-3%/yr), so real purchasing power grows slower. The number you pick here is the single biggest driver of whether property or the market wins.
+      </div>
+
+      <div class="input-group">
+        <label>Investment Capital Gains Tax</label>
+        <div class="input-wrap">
+          <input type="number" id="investmentCGT" value="15" min="0" max="40" step="1" onchange="recalculate()">
+          <span style="font-size:0.85rem;color:var(--text-light)">%</span>
+          <button class="help-bubble" onclick="toggleEli5('eli5-icgt')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-icgt">
+        <strong>Think of it like this:</strong> When you eventually sell your stock market investments, you'll owe capital gains tax. In the US, long-term rates are 0%, 15%, or 20% depending on income. We apply this when calculating what your market investment is actually worth after taxes.
+      </div>
+    </div>
+    </div>
+  </div>
+
+<!-- ============================================================
+     TAX PROFILE
+     ============================================================ -->
+  <div class="card tax">
+    <div class="card-header" style="cursor:pointer" onclick="toggleSection('taxBody')">
+      <div class="card-emoji">&#127758;</div>
+      <div style="flex:1">
+        <h3>Your tax situation</h3>
+        <div id="taxSummary" style="font-size:0.85rem;color:var(--text-light);margin-top:2px">US Citizen (abroad), 22% bracket</div>
+      </div>
+      <span class="arrow" style="font-size:0.7rem;color:var(--text-light);transition:transform 0.2s" id="taxBodyArrow">&#9654;</span>
+    </div>
+    <div class="collapsible" id="taxBody">
+    <div class="input-grid">
+      <div class="input-group">
+        <label>Tax Residency</label>
+        <div class="input-wrap">
+          <select id="taxResidency" onchange="recalculate()" oninput="recalculate()">
+            <option value="us_abroad">US Citizen (living abroad)</option>
+            <option value="us_domestic">US Citizen (living in US)</option>
+            <option value="eu">EU/EEA Resident</option>
+            <option value="non_eu">Other (non-EU)</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-residency')">?</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>US Marginal Tax Bracket</label>
+        <div class="input-wrap">
+          <select id="usBracket" onchange="recalculate()">
+            <option value="0">N/A (not US taxpayer)</option>
+            <option value="10">10%</option>
+            <option value="12">12%</option>
+            <option value="22" selected>22%</option>
+            <option value="24">24%</option>
+            <option value="32">32%</option>
+            <option value="35">35%</option>
+            <option value="37">37%</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-bracket')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-residency">
+        <strong>This changes EVERYTHING.</strong> US citizens owe the IRS on worldwide income, even living abroad. EU/EEA residents get a huge advantage in Spain: 19% tax on net income (after deducting expenses) vs 24% on gross income for non-EU. That's like paying for the whole pizza vs just the slices you ate.
+      </div>
+      <div class="eli5" id="eli5-bracket">
+        <strong>Think of it like this:</strong> Your US marginal rate determines how much Uncle Sam taxes your rental income (after deductions). The higher your bracket, the more the foreign tax credit matters -- because there's more US tax to offset.
+      </div>
+
+      <div class="input-group">
+        <label>US Modified AGI</label>
+        <div class="input-wrap">
+          <span class="currency-label">USD</span>
+          <input type="number" id="usMagi" value="180000" min="0" step="10000" onchange="recalculate()">
+          <button class="help-bubble" onclick="toggleEli5('eli5-magi')">?</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Building / Land Split</label>
+        <div class="input-wrap">
+          <input type="number" id="buildingPct" value="75" min="50" max="90" step="5" onchange="recalculate()">
+          <span style="font-size:0.85rem;color:var(--text-light)">% building</span>
+          <button class="help-bubble" onclick="toggleEli5('eli5-depreciation')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-magi">
+        <strong>Think of it like this:</strong> If your modified adjusted gross income exceeds $200K (single) or $250K (married), you'll owe an extra 3.8% Net Investment Income Tax (NIIT) on rental income. The painful part? You can NOT offset NIIT with foreign tax credits. It's like a cover charge that doesn't include drinks.
+      </div>
+      <div class="eli5" id="eli5-depreciation">
+        <strong>Think of it like this:</strong> The IRS lets you deduct the building's value over 30 years (for foreign property). But you can only depreciate the building, not the land underneath it. Typical split is 70-80% building. This deduction reduces your US taxable income from the rental.
+      </div>
+
+      <div class="input-group">
+        <label>Filing Status</label>
+        <div class="input-wrap">
+          <select id="filingStatus" onchange="recalculate()">
+            <option value="single">Single</option>
+            <option value="mfj">Married Filing Jointly</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-filing')">?</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Projection Period</label>
+        <div class="input-wrap">
+          <input type="number" id="projectionYears" value="20" min="5" max="30" step="1" onchange="recalculate()">
+          <span style="font-size:0.85rem;color:var(--text-light)">years</span>
+          <button class="help-bubble" onclick="toggleEli5('eli5-projection')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-filing">
+        <strong>This affects NIIT thresholds.</strong> Married Filing Jointly gets a higher threshold ($250K) before the 3.8% NIIT surtax kicks in, vs $200K for single filers. It also affects your marginal tax bracket, though we let you set that directly above.
+      </div>
+      <div class="eli5" id="eli5-projection">
+        <strong>How far into the future to look.</strong> 20 years is a good default -- long enough to see the full picture (property appreciation compounds, mortgage gets paid off) but not so long that the numbers become meaningless. Property is a long game; 5-10 years is usually too short to judge.
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     HERO BREAKEVEN NUMBER
+     ============================================================ -->
+<div class="hero-number">
+  <div class="big-circle" id="heroCircle">
+    <div class="big-number" id="breakevenNumber">--</div>
+    <div class="big-label" id="breakevenLabel">years</div>
+  </div>
+  <p class="hero-subtitle" id="heroSubtitle">calculating...</p>
+  <p class="hero-context" id="heroContext"></p>
+</div>
+
+<!-- ============================================================
+     STAT PILLS
+     ============================================================ -->
+<div class="stats-row">
+  <div class="stat-pill">
+    <div class="stat-value lavender" id="stat-breakeven">--</div>
+    <div class="stat-label">breakeven</div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-value mint" id="stat-advantage">--</div>
+    <div class="stat-secondary" id="stat-advantage-secondary"></div>
+    <div class="stat-label">final advantage</div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-value peach" id="stat-yield">--</div>
+    <div class="stat-label">net yield</div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-value rose" id="stat-taxdrag">--</div>
+    <div class="stat-secondary" id="stat-taxdrag-secondary"></div>
+    <div class="stat-label">annual tax drag</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CHART
+     ============================================================ -->
+<div class="chart-card">
+  <h2>Wealth over time</h2>
+  <div class="chart-controls">
+    <button class="active" onclick="setChartMode('cumulative', this)">Cumulative</button>
+    <button onclick="setChartMode('annual', this)">Annual Cash Flow</button>
+  </div>
+  <div class="chart-container">
+    <canvas id="mainChart"></canvas>
+  </div>
+</div>
+
+<!-- ============================================================
+     TAX BREAKDOWN
+     ============================================================ -->
+<div class="tax-section">
+  <h2>Tax breakdown (click any to learn more)</h2>
+  <div class="tax-pills" id="taxPills">
+    <!-- Populated by JS -->
+  </div>
+  <div class="tax-total-bar">
+    <span>Combined annual tax burden</span>
+    <span id="totalTaxBurden">--</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     CASHFLOW TABLE
+     ============================================================ -->
+<div class="cashflow-card">
+  <h2>Year-by-year breakdown</h2>
+  <table class="cashflow-table">
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Property Value</th>
+        <th>Rental Income</th>
+        <th>Total Costs</th>
+        <th>Property Net</th>
+        <th>Market Net</th>
+        <th>Difference</th>
+      </tr>
+    </thead>
+    <tbody id="cashflowBody">
+      <!-- Populated by JS -->
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================================================
+     FEEDBACK
+     ============================================================ -->
+<div class="feedback-card">
+  <h2>How can we make this better?</h2>
+  <p class="desc">Built for friends and family -- your feedback makes it better for everyone</p>
+  <input type="text" id="feedbackName" placeholder="Name (optional)" style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;color:var(--text);margin-bottom:10px">
+  <textarea id="feedbackText" placeholder="Found a bug? Have an idea? Tell us anything..."></textarea>
+  <br>
+  <button class="btn-gradient" id="feedbackBtn" onclick="submitFeedback()">Send Feedback</button>
+  <div class="feedback-status" id="feedbackStatus"></div>
+</div>
+
+<footer>
+  <p>Renta -- a property investment calculator for international dreamers</p>
+  <p style="margin-top:4px">Tax estimates are illustrative. Always consult a qualified tax professional.</p>
+</footer>
+</div>
+
+<script>
+/* ============================================================
+   CONSTANTS & CONFIG
+   ============================================================ */
+
+// ITP rates by region (resale property transfer tax)
+const ITP_RATES = {
+  valencia: 0.10, madrid: 0.06, catalonia: 0.10, andalusia: 0.07,
+  balearic: 0.08, canary: 0.065, basque: 0.07, galicia: 0.09,
+  aragon: 0.08, murcia: 0.08, castilla_leon: 0.08, castilla_mancha: 0.09,
+  extremadura: 0.08, asturias: 0.08, cantabria: 0.10, navarra: 0.06, rioja: 0.07
+};
+
+// AJD rates by region (stamp duty for new builds)
+const AJD_RATES = {
+  valencia: 0.015, madrid: 0.007, catalonia: 0.015, andalusia: 0.012,
+  balearic: 0.012, canary: 0.01, basque: 0.005, galicia: 0.015,
+  aragon: 0.015, murcia: 0.015, castilla_leon: 0.015, castilla_mancha: 0.015,
+  extremadura: 0.015, asturias: 0.012, cantabria: 0.015, navarra: 0.005, rioja: 0.01
+};
+
+// Spanish capital gains tax brackets
+const ES_CGT_BRACKETS = [
+  { limit: 6000, rate: 0.19 },
+  { limit: 50000, rate: 0.21 },
+  { limit: 200000, rate: 0.23 },
+  { limit: 300000, rate: 0.27 },
+  { limit: Infinity, rate: 0.28 }
+];
+
+// Investment vehicle returns
+const VEHICLE_RETURNS = {
+  sp500: 10, world: 8, balanced: 7, hysa: 4.5, custom: null
+};
+
+// State
+let displayCurrency = 'EUR';
+const propertyCurrency = 'EUR'; // Spain is always EUR
+let fxRates = { EUR: 1, USD: 1.08, GBP: 0.86, CHF: 0.97, SEK: 11.2, NOK: 11.5, DKK: 7.46, PLN: 4.32, CZK: 25.2, JPY: 163.5 };
+const CURRENCY_SYMBOLS = { EUR: '\u20AC', USD: '$', GBP: '\u00A3', CHF: 'CHF ', SEK: 'kr', NOK: 'kr', DKK: 'kr', PLN: 'z\u0142', CZK: 'K\u010D', JPY: '\u00A5' };
+const CURRENCY_DECIMALS = { JPY: 0, SEK: 0, NOK: 0, DKK: 0, CZK: 0 }; // currencies that don't use decimals for large amounts
+let chartMode = 'cumulative';
+let mainChart = null;
+// IDs of monetary input fields that should be converted when currency changes
+const MONETARY_INPUTS = ['purchasePrice', 'monthlyRent', 'communityFees', 'insurance', 'gestorFee', 'initialInvestment', 'monthlyContribution', 'rentSavings'];
+
+/* ============================================================
+   UTILITY FUNCTIONS
+   ============================================================ */
+
+function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function pct(id) { return val(id) / 100; }
+// Get value in EUR (converts from display currency to EUR)
+function valEur(id) {
+  const raw = val(id);
+  if (displayCurrency === 'EUR') return raw;
+  return raw / fxRates[displayCurrency];
+}
+function fmtNum(n, decimals = 0) {
+  if (isNaN(n) || !isFinite(n)) return '--';
+  return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+function fmtCurrencyBoth(amountEur) {
+  const rate = fxRates[displayCurrency] || 1;
+  const sym = CURRENCY_SYMBOLS[displayCurrency] || displayCurrency + ' ';
+  const converted = amountEur * rate;
+  return sym + fmtNum(Math.round(converted));
+}
+function secondaryCurrency(amountEur) {
+  // Always show EUR as secondary when display is not EUR, and USD when display is EUR
+  const sec = displayCurrency === 'EUR' ? 'USD' : 'EUR';
+  const rate = fxRates[sec] || 1;
+  const sym = CURRENCY_SYMBOLS[sec] || sec + ' ';
+  return sym + fmtNum(Math.round(amountEur * rate));
+}
+
+/* ============================================================
+   UI HELPERS
+   ============================================================ */
+
+function toggleEli5(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show');
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  const btn = document.getElementById(id + 'Toggle');
+  const arrow = document.getElementById(id + 'Arrow');
+  el.classList.toggle('open');
+  if (btn) btn.classList.toggle('open');
+  if (arrow) arrow.style.transform = el.classList.contains('open') ? 'rotate(90deg)' : '';
+}
+
+function switchCurrency(newCurrency) {
+  const oldRate = fxRates[displayCurrency] || 1;
+  const newRate = fxRates[newCurrency] || 1;
+  // Convert all monetary input values from old display currency to new
+  MONETARY_INPUTS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value) {
+      const oldVal = parseFloat(el.value);
+      if (!isNaN(oldVal) && oldVal !== 0) {
+        // Convert: old display -> EUR -> new display
+        const eurVal = oldVal / oldRate;
+        const newVal = eurVal * newRate;
+        el.value = Math.round(newVal);
+      }
+    }
+  });
+  displayCurrency = newCurrency;
+  // Update currency labels
+  document.querySelectorAll('[data-currency]').forEach(el => el.textContent = newCurrency);
+  // Update FX rate display
+  document.getElementById('fxRate').value = newRate.toFixed(newCurrency === 'JPY' || newCurrency === 'CZK' || newCurrency === 'SEK' ? 2 : 4);
+  document.getElementById('fxCurrencyLabel').textContent = newCurrency;
+  recalculate();
+}
+
+function updateReturnRate() {
+  const vehicle = document.getElementById('investmentVehicle').value;
+  const rate = VEHICLE_RETURNS[vehicle];
+  if (rate !== null) {
+    document.getElementById('expectedReturn').value = rate;
+  }
+}
+
+function setChartMode(mode, btn) {
+  chartMode = mode;
+  document.querySelectorAll('.chart-controls button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateChart();
+}
+
+// Show/hide living situation fields
+document.getElementById('livingSituation').addEventListener('change', function() {
+  const v = this.value;
+  document.getElementById('rentSavingsGroup').style.display = (v === 'yes' || v === 'partial') ? '' : 'none';
+  document.getElementById('monthsLivingGroup').style.display = (v === 'partial') ? '' : 'none';
+});
+
+/* ============================================================
+   CALCULATION ENGINE
+   ============================================================ */
+
+function calculateClosingCosts(price, region, isNewBuild) {
+  let transferTax;
+  if (isNewBuild) {
+    // IVA 10% + AJD (stamp duty varies by region)
+    transferTax = price * 0.10 + price * (AJD_RATES[region] || 0.015);
+  } else {
+    transferTax = price * (ITP_RATES[region] || 0.08);
+  }
+  const notary = Math.min(Math.max(price * 0.003, 600), 1500);
+  const registry = Math.min(Math.max(price * 0.002, 400), 1000);
+  const gestor = 450;
+  const lawyer = price * 0.01;
+  return { transferTax, notary, registry, gestor, lawyer, total: transferTax + notary + registry + gestor + lawyer };
+}
+
+function calculateSpanishTax(grossAnnualRent, occupancy, residencyType, cadastralValue, expenses) {
+  const occupiedRent = grossAnnualRent * occupancy;
+  const vacantMonths = 12 * (1 - occupancy);
+
+  let irnrRented, irnrVacant;
+  if (residencyType === 'eu') {
+    // EU: 19% on net income (gross - deductible expenses)
+    const netIncome = Math.max(0, occupiedRent - expenses);
+    irnrRented = netIncome * 0.19;
+    irnrVacant = vacantMonths > 0 ? (cadastralValue * 0.011 / 12 * vacantMonths) * 0.19 : 0;
+  } else {
+    // Non-EU (including US): 24% on gross, no deductions
+    irnrRented = occupiedRent * 0.24;
+    irnrVacant = vacantMonths > 0 ? (cadastralValue * 0.02 / 12 * vacantMonths) * 0.24 : 0;
+  }
+
+  // IBI: ~0.5% of cadastral value
+  const ibi = cadastralValue * 0.005;
+  // Basura: flat
+  const basura = 200;
+
+  return { irnrRented, irnrVacant, irnr: irnrRented + irnrVacant, ibi, basura, total: irnrRented + irnrVacant + ibi + basura };
+}
+
+function calculateUSTax(grossRent, deductions, spanishTaxPaid, marginalRate, magi, filingStatus, isUSTaxpayer) {
+  if (!isUSTaxpayer) return { scheduleE: 0, ftc: 0, niit: 0, total: 0, netOwed: 0 };
+
+  // Schedule E: taxable income after all deductions
+  const taxableIncome = Math.max(0, grossRent - deductions);
+  const scheduleETax = taxableIncome * marginalRate;
+
+  // Foreign Tax Credit: limited to US tax on foreign income
+  const ftc = Math.min(spanishTaxPaid, scheduleETax);
+
+  // NIIT: 3.8% if over threshold, cannot be offset by FTC
+  const niitThreshold = filingStatus === 'mfj' ? 250000 : 200000;
+  const niit = magi > niitThreshold ? taxableIncome * 0.038 : 0;
+
+  const netOwed = Math.max(0, scheduleETax - ftc) + niit;
+  const excessFTC = Math.max(0, spanishTaxPaid - scheduleETax);
+
+  return { scheduleETax, ftc, niit, netOwed, excessFTC, taxableIncome };
+}
+
+function calculateMortgagePayment(principal, annualRate, termYears) {
+  if (principal <= 0 || termYears <= 0) return 0;
+  const r = annualRate / 12;
+  const n = termYears * 12;
+  if (r === 0) return principal / n;
+  return principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+}
+
+function calculateMortgageBalance(principal, annualRate, termYears, year) {
+  if (principal <= 0 || termYears <= 0) return 0;
+  const r = annualRate / 12;
+  const n = termYears * 12;
+  const monthsPaid = Math.min(year * 12, n);
+  if (r === 0) return principal * (1 - monthsPaid / n);
+  const payment = principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  return principal * Math.pow(1 + r, monthsPaid) - payment * (Math.pow(1 + r, monthsPaid) - 1) / r;
+}
+
+function calculateSpanishCGT(gain) {
+  if (gain <= 0) return 0;
+  let tax = 0;
+  let remaining = gain;
+  let prevLimit = 0;
+  for (const bracket of ES_CGT_BRACKETS) {
+    const taxable = Math.min(remaining, bracket.limit - prevLimit);
+    tax += taxable * bracket.rate;
+    remaining -= taxable;
+    prevLimit = bracket.limit;
+    if (remaining <= 0) break;
+  }
+  return tax;
+}
+
+function runProjection() {
+  const price = valEur('purchasePrice');
+  const region = document.getElementById('region').value;
+  const isNewBuild = document.getElementById('newBuild').value === 'yes';
+  const monthlyRent = valEur('monthlyRent');
+  const occupancy = pct('occupancy');
+  const appreciation = pct('appreciation');
+  const mgmtFee = pct('mgmtFee');
+  const communityFees = valEur('communityFees');
+  const insurance = valEur('insurance');
+  const maintenancePct = pct('maintenancePct');
+  const gestorFee = valEur('gestorFee');
+  const ltv = pct('ltv');
+  const mortgageRate = pct('mortgageRate');
+  const mortgageTerm = val('mortgageTerm');
+  const residency = document.getElementById('taxResidency').value;
+  const isUS = residency === 'us_abroad' || residency === 'us_domestic';
+  const isEU = residency === 'eu';
+  const usBracket = pct('usBracket');
+  const magi = val('usMagi');
+  const filingStatus = document.getElementById('filingStatus').value;
+  const buildingPct = pct('buildingPct');
+  const years = val('projectionYears');
+  const expectedReturn = pct('expectedReturn');
+  const investmentCGT = pct('investmentCGT');
+  const livingSituation = document.getElementById('livingSituation').value;
+  const rentSavings = valEur('rentSavings');
+  const monthsLiving = val('monthsLiving');
+
+  // Closing costs
+  const closing = calculateClosingCosts(price, region, isNewBuild);
+  const totalAcquisition = price + closing.total;
+
+  // Mortgage
+  const mortgagePrincipal = price * ltv;
+  const downPayment = price - mortgagePrincipal;
+  const monthlyMortgage = calculateMortgagePayment(mortgagePrincipal, mortgageRate, mortgageTerm);
+  const annualMortgage = monthlyMortgage * 12;
+
+  // Cadastral value estimate (40% of purchase price)
+  const cadastralValue = price * 0.4;
+
+  // Depreciation (30-year ADS, building portion only)
+  const annualDepreciation = (price * buildingPct) / 30;
+
+  // Auto-calculate investment lump sum and monthly contribution
+  const cashOutOfPocket = downPayment + closing.total;
+  const initialInvEl = document.getElementById('initialInvestment');
+  const monthlyContEl = document.getElementById('monthlyContribution');
+  let initialInvestment = valEur('initialInvestment') || cashOutOfPocket;
+  if (!initialInvEl.value) initialInvEl.placeholder = fmtNum(Math.round(cashOutOfPocket));
+
+  // Year-by-year projection
+  const propertyData = [];
+  const marketData = [];
+  const annualCashflow = [];
+  let cumulativePropertyNet = -cashOutOfPocket;
+  let cumulativeMarketNet = 0;
+  let marketBalance = initialInvestment;
+  let breakevenYear = null;
+  let excessFTCCarryforward = 0;
+
+  for (let y = 1; y <= years; y++) {
+    const currentValue = price * Math.pow(1 + appreciation, y);
+    const currentRent = monthlyRent * Math.pow(1 + 0.02, y - 1); // 2% rent inflation
+
+    // Rental income based on living situation
+    let rentalMonths, livingMonths, effectiveOccupancy;
+    if (livingSituation === 'yes') {
+      rentalMonths = 0; livingMonths = 12; effectiveOccupancy = 0;
+    } else if (livingSituation === 'partial') {
+      livingMonths = monthsLiving;
+      rentalMonths = 12 - livingMonths;
+      effectiveOccupancy = occupancy * (rentalMonths / 12);
+    } else {
+      rentalMonths = 12; livingMonths = 0;
+      effectiveOccupancy = occupancy;
+    }
+
+    const grossAnnualRent = currentRent * 12 * effectiveOccupancy;
+    const rentSavingsAnnual = (livingSituation === 'yes' ? 12 : livingSituation === 'partial' ? livingMonths : 0) * rentSavings;
+
+    // Operating expenses
+    const mgmtCost = grossAnnualRent * mgmtFee;
+    const commFees = communityFees * 12;
+    const maintenance = currentValue * maintenancePct;
+    const totalExpenses = mgmtCost + commFees + insurance + maintenance + gestorFee;
+
+    // Spanish taxes
+    const spanishTax = calculateSpanishTax(
+      currentRent * 12, effectiveOccupancy,
+      isEU ? 'eu' : 'non_eu',
+      cadastralValue, totalExpenses
+    );
+
+    // US taxes
+    const mortgageInterest = y <= mortgageTerm ? calculateMortgageBalance(mortgagePrincipal, mortgageRate, mortgageTerm, y - 1) * mortgageRate : 0;
+    const usDeductions = totalExpenses + mortgageInterest + spanishTax.ibi + annualDepreciation;
+    const usTax = calculateUSTax(grossAnnualRent, usDeductions, spanishTax.total, usBracket, magi, filingStatus, isUS);
+    excessFTCCarryforward += usTax.excessFTC || 0;
+
+    const totalTax = spanishTax.total + usTax.netOwed;
+    const mortgagePayment = y <= mortgageTerm ? annualMortgage : 0;
+    const netCashflow = grossAnnualRent + rentSavingsAnnual - totalExpenses - totalTax - mortgagePayment;
+
+    // Property equity
+    const mortgageRemaining = y <= mortgageTerm ? calculateMortgageBalance(mortgagePrincipal, mortgageRate, mortgageTerm, y) : 0;
+    const equity = currentValue - mortgageRemaining;
+    const propertyNetWorth = equity - cashOutOfPocket + netCashflow * y; // simplified cumulative
+
+    cumulativePropertyNet += netCashflow;
+
+    // Market alternative
+    const monthlyContribution = valEur('monthlyContribution') || Math.max(0, mortgagePayment / 12);
+    if (!monthlyContEl.value) monthlyContEl.placeholder = fmtNum(Math.round(Math.max(0, monthlyMortgage)));
+    const monthlyReturn = Math.pow(1 + expectedReturn, 1/12) - 1;
+    for (let m = 0; m < 12; m++) {
+      marketBalance = marketBalance * (1 + monthlyReturn) + monthlyContribution;
+    }
+    const marketAfterTax = initialInvestment + (marketBalance - initialInvestment) * (1 - investmentCGT);
+
+    // For comparison: property total = equity + cumulative net cashflow (after all costs/taxes) - original cash out
+    const propertyCumulative = cumulativePropertyNet + (currentValue - price) - mortgageRemaining + mortgagePrincipal;
+    const totalContributed = initialInvestment + monthlyContribution * 12 * y;
+    const marketGainAfterTax = (marketBalance - totalContributed) * (1 - investmentCGT);
+    const marketCumulative = marketGainAfterTax;
+
+    propertyData.push(propertyCumulative);
+    marketData.push(marketCumulative);
+
+    if (!breakevenYear && propertyCumulative >= marketCumulative) {
+      breakevenYear = y;
+    }
+
+    annualCashflow.push({
+      year: y,
+      propertyValue: currentValue,
+      grossRent: grossAnnualRent,
+      totalCosts: totalExpenses + totalTax + mortgagePayment,
+      propertyNet: propertyCumulative,
+      marketNet: marketCumulative,
+      diff: propertyCumulative - marketCumulative,
+      netCashflow,
+      spanishTax,
+      usTax
+    });
+  }
+
+  // Calculate first-year figures for tax breakdown
+  const yr1 = annualCashflow[0] || {};
+  const yr1GrossRent = monthlyRent * 12 * (livingSituation === 'yes' ? 0 : livingSituation === 'partial' ? (12 - monthsLiving) / 12 * occupancy : occupancy);
+  const yr1Expenses = (yr1GrossRent * mgmtFee) + (communityFees * 12) + insurance + (price * maintenancePct) + gestorFee;
+  const yr1SpanishTax = calculateSpanishTax(monthlyRent * 12,
+    livingSituation === 'yes' ? 0 : livingSituation === 'partial' ? (12 - monthsLiving) / 12 * occupancy : occupancy,
+    isEU ? 'eu' : 'non_eu', cadastralValue, yr1Expenses);
+  const yr1MortgageInterest = mortgagePrincipal * mortgageRate;
+  const yr1USDeductions = yr1Expenses + yr1MortgageInterest + yr1SpanishTax.ibi + annualDepreciation;
+  const yr1USTax = calculateUSTax(yr1GrossRent, yr1USDeductions, yr1SpanishTax.total, usBracket, magi, filingStatus, isUS);
+  const yr1TotalTax = yr1SpanishTax.total + yr1USTax.netOwed;
+  const yr1NetYield = (yr1GrossRent - yr1Expenses - yr1TotalTax) / totalAcquisition * 100;
+
+  return {
+    propertyData, marketData, annualCashflow, breakevenYear, years,
+    closing, cashOutOfPocket, totalAcquisition,
+    yr1SpanishTax, yr1USTax, yr1TotalTax, yr1NetYield,
+    yr1GrossRent, yr1Expenses, isUS, isEU,
+    annualDepreciation, mortgagePrincipal, mortgageRate
+  };
+}
+
+/* ============================================================
+   RENDER FUNCTIONS
+   ============================================================ */
+
+function updateHero(result) {
+  const el = document.getElementById('breakevenNumber');
+  const label = document.getElementById('breakevenLabel');
+  const sub = document.getElementById('heroSubtitle');
+  const ctx = document.getElementById('heroContext');
+
+  if (result.breakevenYear) {
+    el.textContent = result.breakevenYear;
+    label.textContent = 'years';
+    sub.textContent = 'to break even on property vs the market';
+    const finalDiff = result.propertyData[result.years - 1] - result.marketData[result.years - 1];
+    ctx.textContent = `After ${result.years} years: property is ${finalDiff >= 0 ? 'ahead' : 'behind'} by ${fmtCurrencyBoth(Math.abs(finalDiff))}`;
+  } else {
+    const finalDiff = result.propertyData[result.years - 1] - result.marketData[result.years - 1];
+    if (finalDiff > 0) {
+      el.textContent = '<' + result.years;
+      label.textContent = 'years';
+      sub.textContent = 'property is always ahead in this scenario';
+    } else {
+      el.textContent = '>' + result.years;
+      label.textContent = 'years';
+      sub.textContent = 'property hasn\'t caught up within ' + result.years + ' years';
+    }
+    ctx.textContent = `${result.years}-year difference: ${fmtCurrencyBoth(Math.abs(finalDiff))} ${finalDiff >= 0 ? 'property advantage' : 'market advantage'}`;
+  }
+}
+
+function updateStats(result) {
+  document.getElementById('stat-breakeven').textContent = result.breakevenYear ? `Year ${result.breakevenYear}` : 'N/A';
+
+  const finalDiff = result.propertyData[result.years - 1] - result.marketData[result.years - 1];
+  const advEl = document.getElementById('stat-advantage');
+  advEl.textContent = (finalDiff >= 0 ? '+' : '') + fmtCurrencyBoth(finalDiff);
+  advEl.className = 'stat-value ' + (finalDiff >= 0 ? 'mint' : 'rose');
+  document.getElementById('stat-advantage-secondary').textContent = secondaryCurrency(finalDiff);
+
+  document.getElementById('stat-yield').textContent = fmtNum(result.yr1NetYield, 1) + '%';
+
+  document.getElementById('stat-taxdrag').textContent = fmtCurrencyBoth(-result.yr1TotalTax);
+  document.getElementById('stat-taxdrag-secondary').textContent = secondaryCurrency(-result.yr1TotalTax) + '/yr';
+}
+
+function updateTaxPills(result) {
+  const container = document.getElementById('taxPills');
+  const items = [];
+  const r = result;
+
+  // Spanish taxes
+  const irnrRate = r.isEU ? '19%' : '24%';
+  const irnrBasis = r.isEU ? 'net' : 'gross';
+  items.push({
+    flag: 'es', name: `IRNR -- Spanish Income Tax (${irnrRate} on ${irnrBasis})`,
+    desc: r.isEU ? 'EU/EEA rate: 19% of rental income AFTER deducting expenses' : 'Non-EU rate: 24% of rental income BEFORE any deductions',
+    amount: -r.yr1SpanishTax.irnr,
+    eli5: r.isEU
+      ? '<strong>The EU advantage:</strong> As an EU/EEA resident, you pay 19% on your profit after deducting expenses (mortgage interest, repairs, management, etc). Much better than the 24% on gross that non-EU owners pay!'
+      : '<strong>Here\'s the tough part:</strong> Spain takes 24% of your total rent -- before you pay any bills, mortgage, or repairs. Collect \u20AC1,400/mo? Spain gets \u20AC336/mo off the top. EU residents only pay 19% and can deduct expenses first. This is the biggest disadvantage for non-EU owners.'
+  });
+  items.push({
+    flag: 'es', name: 'IBI -- Property Tax',
+    desc: 'Annual tax on cadastral value',
+    amount: -r.yr1SpanishTax.ibi,
+    eli5: '<strong>Think of it like US property tax</strong>, but based on the government\'s estimated value (valor catastral), which is typically 30-50% of what you actually paid. So the effective rate is quite low -- about 0.3% of the real value.'
+  });
+  items.push({
+    flag: 'es', name: 'Basura -- Garbage Tax',
+    desc: 'Municipal waste collection fee',
+    amount: -r.yr1SpanishTax.basura,
+    eli5: '<strong>Simple one:</strong> Every municipality charges a flat annual fee for garbage collection. Usually \u20AC100-300/year. Nothing exciting, but it adds up.'
+  });
+
+  if (r.isUS) {
+    items.push({
+      flag: 'us', name: 'Schedule E -- US Rental Income',
+      desc: `${fmtCurrencyBoth(r.yr1USTax.taxableIncome || 0)} taxable after deductions`,
+      amount: -r.yr1USTax.scheduleETax,
+      eli5: '<strong>The US taxes your worldwide income</strong>, including Spanish rent. But unlike Spain, you can deduct everything -- mortgage interest, repairs, depreciation, insurance, management fees. So your taxable amount is much lower than what Spain taxes you on.'
+    });
+    items.push({
+      flag: 'us', name: 'Foreign Tax Credit (Form 1116)',
+      desc: 'Spanish taxes offset your US bill',
+      amount: r.yr1USTax.ftc,
+      eli5: '<strong>The silver lining:</strong> Every euro you pay Spain offsets your US tax dollar-for-dollar. Since Spain takes 24% of gross and the US taxes net profit, you usually have leftover credits. Those extras carry forward for 10 years. Often, you\'ll owe zero additional regular US tax on the rental.'
+    });
+    if (r.yr1USTax.niit > 0) {
+      items.push({
+        flag: 'us', name: 'NIIT -- 3.8% Surtax',
+        desc: 'Net Investment Income Tax (can\'t offset with FTC!)',
+        amount: -r.yr1USTax.niit,
+        eli5: '<strong>The sneaky one:</strong> If you earn over $200K (single) or $250K (married), this 3.8% surtax hits your rental income. The painful part? You absolutely CANNOT use your Spanish tax credits to offset it. It\'s a totally separate tax under IRC Section 1411. Like a cover charge that doesn\'t include drinks.'
+      });
+    }
+  }
+
+  let html = '';
+  items.forEach((item, i) => {
+    const cls = item.amount >= 0 ? 'positive' : 'negative';
+    const prefix = item.amount >= 0 ? '+' : '';
+    html += `
+      <div class="tax-pill" onclick="toggleEli5('tax-eli5-${i}')">
+        <div class="tax-pill-left">
+          <div class="tax-flag ${item.flag}">${item.flag === 'es' ? '&#127466;&#127480;' : '&#127482;&#127480;'}</div>
+          <div>
+            <div class="tax-name">${item.name}</div>
+            <div class="tax-desc">${item.desc}</div>
+          </div>
+        </div>
+        <span class="tax-amount ${cls}">${prefix}${fmtCurrencyBoth(item.amount)}/yr</span>
+      </div>
+      <div class="tax-eli5" id="tax-eli5-${i}">${item.eli5}</div>
+    `;
+  });
+  container.innerHTML = html;
+
+  document.getElementById('totalTaxBurden').textContent = fmtCurrencyBoth(-r.yr1TotalTax) + '/yr';
+}
+
+function updateCashflowTable(result) {
+  const body = document.getElementById('cashflowBody');
+  let html = '';
+  result.annualCashflow.forEach(row => {
+    const isBreakeven = row.year === result.breakevenYear;
+    html += `<tr class="${isBreakeven ? 'highlight' : ''}">
+      <td>${isBreakeven ? 'Year ' + row.year + ' *' : 'Year ' + row.year}</td>
+      <td>${fmtCurrencyBoth(row.propertyValue)}</td>
+      <td>${fmtCurrencyBoth(row.grossRent)}</td>
+      <td class="negative">${fmtCurrencyBoth(-row.totalCosts)}</td>
+      <td class="${row.propertyNet >= 0 ? 'positive' : 'negative'}">${fmtCurrencyBoth(row.propertyNet)}</td>
+      <td class="${row.marketNet >= 0 ? 'positive' : 'negative'}">${fmtCurrencyBoth(row.marketNet)}</td>
+      <td class="${row.diff >= 0 ? 'positive' : 'negative'}">${(row.diff >= 0 ? '+' : '') + fmtCurrencyBoth(row.diff)}</td>
+    </tr>`;
+  });
+  body.innerHTML = html;
+}
+
+function updateChart(result) {
+  if (!result) result = window._lastResult;
+  if (!result) return;
+  window._lastResult = result;
+
+  const labels = result.annualCashflow.map(r => 'Year ' + r.year);
+
+  let propData, mktData, propLabel, mktLabel;
+  if (chartMode === 'cumulative') {
+    propData = result.propertyData;
+    mktData = result.marketData;
+    propLabel = 'Property Net Worth';
+    mktLabel = 'Market Alternative';
+  } else {
+    propData = result.annualCashflow.map(r => r.netCashflow);
+    mktData = result.annualCashflow.map((r, i) => {
+      const prev = i > 0 ? result.marketData[i - 1] : val('initialInvestment') || result.cashOutOfPocket;
+      return result.marketData[i] - prev;
+    });
+    propLabel = 'Annual Cash Flow (Property)';
+    mktLabel = 'Annual Gain (Market)';
+  }
+
+  if (mainChart) mainChart.destroy();
+
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  mainChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: propLabel,
+          data: propData,
+          borderColor: '#FF9F7C',
+          backgroundColor: 'rgba(255, 159, 124, 0.1)',
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: 'white',
+          pointBorderColor: '#FF9F7C',
+          pointBorderWidth: 2,
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: mktLabel,
+          data: mktData,
+          borderColor: '#7C6FE0',
+          backgroundColor: 'rgba(124, 111, 224, 0.08)',
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: 'white',
+          pointBorderColor: '#7C6FE0',
+          pointBorderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { family: 'Nunito', weight: '600', size: 13 }, usePointStyle: true, pointStyle: 'circle', padding: 20 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(45, 43, 85, 0.95)',
+          titleFont: { family: 'Nunito', weight: '700' },
+          bodyFont: { family: 'Nunito' },
+          padding: 12,
+          cornerRadius: 10,
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': ' + fmtCurrencyBoth(context.raw);
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          grid: { color: '#F3F1FD' },
+          ticks: {
+            font: { family: 'Nunito', weight: '600', size: 11 },
+            color: '#9391B0',
+            callback: v => fmtCurrencyBoth(v)
+          }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Nunito', weight: '600', size: 11 }, color: '#9391B0' }
+        }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   MAIN RECALCULATE
+   ============================================================ */
+
+function recalculate() {
+  try {
+    // Update summary lines for collapsed sections
+    const vehicleEl = document.getElementById('investmentVehicle');
+    const vehicleText = vehicleEl.options[vehicleEl.selectedIndex].text;
+    document.getElementById('investmentSummary').textContent = 'Comparing against: ' + vehicleText;
+
+    const residencyEl = document.getElementById('taxResidency');
+    const residencyText = residencyEl.options[residencyEl.selectedIndex].text;
+    const residencyVal = residencyEl.value;
+    const bracketEl = document.getElementById('usBracket');
+    const bracketText = bracketEl.value === '0' ? '' : ', ' + bracketEl.value + '% bracket';
+    const irnrNote = residencyVal === 'eu' ? ' -- IRNR 19% on net' : ' -- IRNR 24% on gross';
+    document.getElementById('taxSummary').textContent = residencyText + bracketText + irnrNote;
+
+    const result = runProjection();
+    updateHero(result);
+    updateStats(result);
+    updateTaxPills(result);
+    updateCashflowTable(result);
+    updateChart(result);
+  } catch (e) {
+    console.error('Calculation error:', e, e.stack);
+  }
+}
+
+/* ============================================================
+   FEEDBACK
+   ============================================================ */
+
+async function submitFeedback() {
+  const text = document.getElementById('feedbackText').value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('feedbackBtn');
+  const status = document.getElementById('feedbackStatus');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  const payload = {
+    name: document.getElementById('feedbackName').value.trim(),
+    text: text,
+    timestamp: new Date().toISOString(),
+    url: window.location.href
+  };
+
+  try {
+    const res = await fetch('/friends/renta/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      status.textContent = 'Thank you! Your feedback has been received.';
+      status.className = 'feedback-status success';
+      document.getElementById('feedbackText').value = '';
+      document.getElementById('feedbackName').value = '';
+    } else {
+      throw new Error('Server error');
+    }
+  } catch (e) {
+    // Fallback: store locally
+    const existing = JSON.parse(localStorage.getItem('renta_feedback') || '[]');
+    existing.push(payload);
+    localStorage.setItem('renta_feedback', JSON.stringify(existing));
+    status.textContent = 'Saved locally! (server unavailable)';
+    status.className = 'feedback-status success';
+    document.getElementById('feedbackText').value = '';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send Feedback';
+  setTimeout(() => { status.textContent = ''; }, 5000);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+
+// Fetch live exchange rates for all currencies
+async function fetchFxRates() {
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/EUR');
+    const data = await res.json();
+    if (data.rates) {
+      Object.keys(fxRates).forEach(c => {
+        if (data.rates[c]) fxRates[c] = data.rates[c];
+      });
+      fxRates.EUR = 1;
+      // Update displayed FX rate
+      document.getElementById('fxRate').value = (fxRates[displayCurrency] || 1).toFixed(4);
+      recalculate();
+    }
+  } catch (e) {
+    // Keep defaults
+  }
+}
+
+// Boot
+document.addEventListener('DOMContentLoaded', () => {
+  fetchFxRates();
+  recalculate();
+});
+</script>
+</body>
+</html>
