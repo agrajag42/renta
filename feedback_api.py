@@ -59,12 +59,24 @@ async def auth_middleware(request: Request, call_next):
     if path == "/api/health":
         return await call_next(request)
 
+    # Strip /friends/renta prefix if present (Firebase sends full path)
+    if path.startswith("/friends/renta"):
+        stripped = path[len("/friends/renta"):] or "/"
+        request.scope["path"] = stripped
+
     # Check auth for everything else
+    path = request.scope["path"]
+    if path.startswith("/api/"):
+        # API endpoints: check auth
+        user = _check_auth(request)
+        if not user:
+            return JSONResponse({"error": "unauthorized"}, status_code=401)
+        return await call_next(request)
+
     user = _check_auth(request)
     if not user:
-        # Redirect to homepage login, with return URL
-        return_path = str(request.url.path)
-        return RedirectResponse(url=f"{LOGIN_URL}?next={return_path}", status_code=302)
+        return_path = str(request.url)
+        return RedirectResponse(url=f"{LOGIN_URL}", status_code=302)
 
     return await call_next(request)
 
