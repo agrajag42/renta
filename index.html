@@ -1284,7 +1284,7 @@ footer a { color: var(--lavender); text-decoration: none; }
   </div>
   <div id="mathBody">
     <div style="margin-bottom:16px;display:flex;gap:8px">
-      <button class="btn-gradient" onclick="exportCSV()" style="font-size:0.85rem;padding:8px 16px">Download Spreadsheet (CSV)</button>
+      <button class="btn-gradient" onclick="exportCSV()" style="font-size:0.85rem;padding:8px 16px">Download Spreadsheet (.xlsx)</button>
     </div>
     <div id="mathContent" style="font-family:'SF Mono','Menlo',monospace;font-size:0.8rem;line-height:1.5;white-space:pre-wrap;overflow-x:auto;background:var(--bg-start);padding:16px;border-radius:12px;border:1px solid var(--border);max-height:600px;overflow-y:auto"></div>
   </div>
@@ -2152,6 +2152,11 @@ function renderMathBreakdown(result) {
 function exportCSV() {
   const r = window._lastResult;
   if (!r || !r.annualCashflow.length) return;
+
+  if (typeof XLSX === 'undefined') {
+    alert('Spreadsheet library still loading. Try again in a moment.');
+    return;
+  }
 
   const wb = XLSX.utils.book_new();
   const cf = r.annualCashflow;
