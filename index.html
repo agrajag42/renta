@@ -2283,7 +2283,7 @@ async function submitFeedback() {
   };
 
   try {
-    const res = await fetch('/friends/renta/api/feedback', {
+    const res = await fetch('/apps/renta/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

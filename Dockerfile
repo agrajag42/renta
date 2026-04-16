@@ -3,7 +3,7 @@ FROM python:3.12-slim
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-COPY index.html /usr/share/nginx/html/friends/renta/index.html
+COPY index.html /usr/share/nginx/html/apps/renta/index.html
 COPY feedback_api.py /app/feedback_api.py
 
 WORKDIR /app

@@ -75,7 +75,7 @@ echo "Deployed! Service URL: ${SERVICE_URL}"
 echo "Renta available at: ${SERVICE_URL}/friends/renta"
 
 # Register in site manifest
-SITE_PATH="/friends/renta"
+SITE_PATH="/apps/renta"
 SITE_LABEL="renta"
 SITE_MIN_TIER="friends"
 MANIFEST_BUCKET="gs://ethanpease-site-manifest"

@@ -20,7 +20,7 @@ ACCOUNTS = {
     "admin": "admin",
 }
 LOGIN_URL = "/"
-INDEX_PATH = "/usr/share/nginx/html/friends/renta/index.html"
+INDEX_PATH = "/usr/share/nginx/html/apps/renta/index.html"
 
 _index_html = ""
 try:
@@ -81,7 +81,7 @@ async def health():
 
 
 @app.post("/api/feedback")
-@app.post("/friends/renta/api/feedback")
+@app.post("/apps/renta/api/feedback")
 async def post_feedback(request: Request):
     username = _check_auth(request)
     if not username:
@@ -105,8 +105,8 @@ async def post_feedback(request: Request):
     return JSONResponse({"status": "ok"})
 
 
-@app.api_route("/friends/renta", methods=["GET"])
-@app.api_route("/friends/renta/", methods=["GET"])
+@app.api_route("/apps/renta", methods=["GET"])
+@app.api_route("/apps/renta/", methods=["GET"])
 @app.api_route("/", methods=["GET"])
 async def serve_app(request: Request):
     if not _check_auth(request):
