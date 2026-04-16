@@ -1271,6 +1271,25 @@ footer a { color: var(--lavender); text-decoration: none; }
 </div>
 
 <!-- ============================================================
+     SHOW ALL MATH + EXPORT
+     ============================================================ -->
+<div class="card" id="mathCard" style="display:none">
+  <div class="card-header" style="cursor:pointer" onclick="document.getElementById('mathBody').style.display = document.getElementById('mathBody').style.display === 'none' ? '' : 'none'">
+    <div class="card-emoji">&#128202;</div>
+    <div>
+      <h3>Full Calculation Breakdown</h3>
+      <div style="font-size:0.85rem;color:var(--text-light);margin-top:2px">Every number, step by step</div>
+    </div>
+  </div>
+  <div id="mathBody">
+    <div style="margin-bottom:16px;display:flex;gap:8px">
+      <button class="btn-gradient" onclick="exportCSV()" style="font-size:0.85rem;padding:8px 16px">Download Spreadsheet (CSV)</button>
+    </div>
+    <div id="mathContent" style="font-family:'SF Mono','Menlo',monospace;font-size:0.8rem;line-height:1.5;white-space:pre-wrap;overflow-x:auto;background:var(--bg-start);padding:16px;border-radius:12px;border:1px solid var(--border);max-height:600px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- ============================================================
      FEEDBACK
      ============================================================ -->
 <div class="feedback-card">
@@ -1690,8 +1709,7 @@ function runProjection() {
   const propertyData = [];
   const marketData = [];
   const annualCashflow = [];
-  let cumulativePropertyNet = -cashOutOfPocket;
-  let cumulativeMarketNet = 0;
+  let cumulativeCashflow = 0;
   let marketBalance = initialInvestment;
   let breakevenYear = null;
   let excessFTCCarryforward = 0;
@@ -1742,9 +1760,11 @@ function runProjection() {
     // Property equity
     const mortgageRemaining = y <= mortgageTerm ? calculateMortgageBalance(mortgagePrincipal, mortgageRate, mortgageTerm, y) : 0;
     const equity = currentValue - mortgageRemaining;
-    const propertyNetWorth = equity - cashOutOfPocket + netCashflow * y; // simplified cumulative
 
-    cumulativePropertyNet += netCashflow;
+    cumulativeCashflow += netCashflow;
+
+    // Property wealth = equity + cumulative cash flows from operations
+    const propertyWealth = equity + cumulativeCashflow;
 
     // Market alternative
     const autoMonthlyContrib = Math.max(0, monthlyMortgage);
@@ -1761,18 +1781,15 @@ function runProjection() {
     for (let m = 0; m < 12; m++) {
       marketBalance = marketBalance * (1 + monthlyReturn) + monthlyContribution;
     }
-    const marketAfterTax = initialInvestment + (marketBalance - initialInvestment) * (1 - investmentCGT);
-
-    // For comparison: property total = equity + cumulative net cashflow (after all costs/taxes) - original cash out
-    const propertyCumulative = cumulativePropertyNet + (currentValue - price) - mortgageRemaining + mortgagePrincipal;
     const totalContributed = initialInvestment + monthlyContribution * 12 * y;
-    const marketGainAfterTax = (marketBalance - totalContributed) * (1 - investmentCGT);
-    const marketCumulative = marketGainAfterTax;
+    const marketGains = marketBalance - totalContributed;
+    // Market wealth = total portfolio value after CGT on gains
+    const marketWealth = totalContributed + marketGains * (1 - investmentCGT);
 
-    propertyData.push(propertyCumulative);
-    marketData.push(marketCumulative);
+    propertyData.push(propertyWealth);
+    marketData.push(marketWealth);
 
-    if (!breakevenYear && propertyCumulative >= marketCumulative) {
+    if (!breakevenYear && propertyWealth >= marketWealth) {
       breakevenYear = y;
     }
 
@@ -1781,12 +1798,18 @@ function runProjection() {
       propertyValue: currentValue,
       grossRent: grossAnnualRent,
       totalCosts: totalExpenses + totalTax + mortgagePayment,
-      propertyNet: propertyCumulative,
-      marketNet: marketCumulative,
-      diff: propertyCumulative - marketCumulative,
+      propertyWealth,
+      marketWealth,
+      diff: propertyWealth - marketWealth,
       netCashflow,
+      equity,
+      mortgageRemaining,
+      cumulativeCashflow,
+      monthlyContribution,
       spanishTax,
-      usTax
+      usTax,
+      totalExpenses,
+      rentSavingsAnnual
     });
   }
 
@@ -1808,7 +1831,8 @@ function runProjection() {
     closing, cashOutOfPocket, totalAcquisition,
     yr1SpanishTax, yr1USTax, yr1TotalTax, yr1NetYield,
     yr1GrossRent, yr1Expenses, isUS, isEU,
-    annualDepreciation, mortgagePrincipal, mortgageRate
+    annualDepreciation, mortgagePrincipal, mortgageRate,
+    price, ltv
   };
 }
 
@@ -1943,8 +1967,8 @@ function updateCashflowTable(result) {
       <td>${fmtCurrencyBoth(row.propertyValue)}</td>
       <td>${fmtCurrencyBoth(row.grossRent)}</td>
       <td class="negative">${fmtCurrencyBoth(-row.totalCosts)}</td>
-      <td class="${row.propertyNet >= 0 ? 'positive' : 'negative'}">${fmtCurrencyBoth(row.propertyNet)}</td>
-      <td class="${row.marketNet >= 0 ? 'positive' : 'negative'}">${fmtCurrencyBoth(row.marketNet)}</td>
+      <td class="${row.propertyWealth >= 0 ? 'positive' : 'negative'}">${fmtCurrencyBoth(row.propertyWealth)}</td>
+      <td class="${row.marketWealth >= 0 ? 'positive' : 'negative'}">${fmtCurrencyBoth(row.marketWealth)}</td>
       <td class="${row.diff >= 0 ? 'positive' : 'negative'}">${(row.diff >= 0 ? '+' : '') + fmtCurrencyBoth(row.diff)}</td>
     </tr>`;
   });
@@ -2070,14 +2094,97 @@ function recalculate() {
     document.getElementById('taxSummary').textContent = residencyText + bracketText + irnrNote;
 
     const result = runProjection();
+    window._lastResult = result;
     updateHero(result);
     updateStats(result);
     updateTaxPills(result);
     updateCashflowTable(result);
     updateChart(result);
+    renderMathBreakdown(result);
   } catch (e) {
     console.error('Calculation error:', e, e.stack);
   }
+}
+
+/* ============================================================
+   FULL MATH BREAKDOWN + CSV EXPORT
+   ============================================================ */
+
+function renderMathBreakdown(result) {
+  const r = result;
+  const c = r.closing;
+  const cf = r.annualCashflow;
+  const fmt = (n) => fmtNum(Math.round(n));
+
+  let lines = [];
+  lines.push('=== ACQUISITION ===');
+  lines.push(`Purchase Price:        ${fmt(r.price)}`);
+  lines.push(`Closing Costs:         ${fmt(c.total)} (ITP/IVA: ${fmt(c.itp || c.iva || 0)}, Notary: ${fmt(c.notary)}, Registry: ${fmt(c.registry)}, Lawyer: ${fmt(c.lawyer)}, Gestor: ${fmt(c.gestorClosing || 0)})`);
+  lines.push(`Total Acquisition:     ${fmt(r.totalAcquisition)}`);
+  lines.push(`Mortgage Principal:    ${fmt(r.mortgagePrincipal)} (LTV: ${r.ltv}%)`);
+  lines.push(`Down Payment:          ${fmt(r.price - r.mortgagePrincipal)}`);
+  lines.push(`Cash Out of Pocket:    ${fmt(r.cashOutOfPocket)}`);
+  lines.push('');
+  lines.push('=== YEAR-BY-YEAR PROJECTION ===');
+  lines.push('');
+
+  for (const row of cf) {
+    lines.push(`--- Year ${row.year} ---`);
+    lines.push(`Property Value:        ${fmt(row.propertyValue)}`);
+    lines.push(`Gross Rental Income:   ${fmt(row.grossRent)}`);
+    lines.push(`Operating Expenses:    ${fmt(row.totalExpenses)}`);
+    lines.push(`Spanish Tax:           ${fmt(row.spanishTax.total)} (IRNR: ${fmt(row.spanishTax.irnr)}, IBI: ${fmt(row.spanishTax.ibi)})`);
+    lines.push(`US Tax:                ${fmt(row.usTax.netOwed)} (Gross: ${fmt(row.usTax.grossTax)}, FTC: ${fmt(row.usTax.ftcUsed)})`);
+    lines.push(`Mortgage Payment:      ${fmt(row.totalCosts - row.totalExpenses - row.spanishTax.total - row.usTax.netOwed)}`);
+    lines.push(`Net Cashflow:          ${fmt(row.netCashflow)}`);
+    lines.push(`Equity:                ${fmt(row.equity)} (Value: ${fmt(row.propertyValue)} - Mortgage: ${fmt(row.mortgageRemaining)})`);
+    lines.push(`Property Wealth:       ${fmt(row.propertyWealth)}`);
+    lines.push(`Market Wealth:         ${fmt(row.marketWealth)}`);
+    lines.push(`Difference:            ${row.diff >= 0 ? '+' : ''}${fmt(row.diff)}`);
+    lines.push('');
+  }
+
+  document.getElementById('mathContent').textContent = lines.join('\n');
+  document.getElementById('mathCard').style.display = '';
+}
+
+function exportCSV() {
+  const cf = window._lastResult?.annualCashflow;
+  if (!cf || !cf.length) return;
+
+  const headers = [
+    'Year', 'Property Value', 'Gross Rent', 'Operating Expenses',
+    'Spanish Tax', 'US Tax', 'Net Cashflow', 'Equity',
+    'Mortgage Remaining', 'Cumulative Cashflow',
+    'Property Wealth', 'Market Wealth', 'Difference'
+  ];
+
+  let csv = headers.join(',') + '\n';
+  for (const row of cf) {
+    csv += [
+      row.year,
+      Math.round(row.propertyValue),
+      Math.round(row.grossRent),
+      Math.round(row.totalExpenses),
+      Math.round(row.spanishTax.total),
+      Math.round(row.usTax.netOwed),
+      Math.round(row.netCashflow),
+      Math.round(row.equity),
+      Math.round(row.mortgageRemaining),
+      Math.round(row.cumulativeCashflow),
+      Math.round(row.propertyWealth),
+      Math.round(row.marketWealth),
+      Math.round(row.diff)
+    ].join(',') + '\n';
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'renta-projection.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ============================================================
