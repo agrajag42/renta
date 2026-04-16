@@ -10,6 +10,8 @@ from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 app = FastAPI()
 
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "dev-secret-change-me")
+FEEDBACK_BUCKET = os.environ.get("FEEDBACK_BUCKET", "ethanpease-site-manifest")
+FEEDBACK_FILE = "renta-feedback.jsonl"
 REQUIRED_TIER = "friends"
 TIER_RANK = {"public": 0, "friends": 1, "family": 2, "admin": 3}
 ACCOUNTS = {
@@ -20,7 +22,6 @@ ACCOUNTS = {
 LOGIN_URL = "/"
 INDEX_PATH = "/usr/share/nginx/html/friends/renta/index.html"
 
-# Load index.html at startup
 _index_html = ""
 try:
     with open(INDEX_PATH, "r") as f:
@@ -30,7 +31,6 @@ except FileNotFoundError:
 
 
 def _verify_session(token):
-    """Verify HMAC-signed session cookie (same scheme as homepage app)."""
     if not token or "." not in token:
         return None
     value, sig_b64 = token.rsplit(".", 1)
@@ -46,7 +46,6 @@ def _verify_session(token):
 
 
 def _check_auth(request: Request):
-    """Return username if authenticated at friends tier or above, else None."""
     token = request.cookies.get("__session")
     username = _verify_session(token)
     if not username:
@@ -59,6 +58,23 @@ def _check_auth(request: Request):
     return None
 
 
+def _append_to_gcs(entry):
+    try:
+        from google.cloud import storage
+        client = storage.Client()
+        bucket = client.bucket(FEEDBACK_BUCKET)
+        blob = bucket.blob(FEEDBACK_FILE)
+        existing = ""
+        try:
+            existing = blob.download_as_text()
+        except Exception:
+            pass
+        existing += json.dumps(entry) + "\n"
+        blob.upload_from_string(existing, content_type="application/jsonl")
+    except Exception as e:
+        print(f"GCS write failed: {e}", flush=True)
+
+
 @app.get("/api/health")
 async def health():
     return JSONResponse({"status": "ok"})
@@ -67,7 +83,8 @@ async def health():
 @app.post("/api/feedback")
 @app.post("/friends/renta/api/feedback")
 async def post_feedback(request: Request):
-    if not _check_auth(request):
+    username = _check_auth(request)
+    if not username:
         return JSONResponse({"error": "unauthorized"}, status_code=401)
 
     try:
@@ -76,48 +93,22 @@ async def post_feedback(request: Request):
         return JSONResponse({"error": "Invalid JSON"}, status_code=400)
 
     entry = {
-        "name": body.get("name", ""),
+        "name": body.get("name", "") or username,
         "text": body.get("text", ""),
         "timestamp": body.get("timestamp", datetime.now(timezone.utc).isoformat()),
         "received_at": datetime.now(timezone.utc).isoformat(),
     }
 
     print(json.dumps({"type": "feedback", **entry}), flush=True)
-
-    try:
-        with open("/tmp/feedback.json", "a") as f:
-            f.write(json.dumps(entry) + "\n")
-    except Exception:
-        pass
+    _append_to_gcs(entry)
 
     return JSONResponse({"status": "ok"})
-
-
-@app.get("/api/feedback")
-@app.get("/friends/renta/api/feedback")
-async def get_feedback(request: Request):
-    token = request.query_params.get("token", "")
-    if token != "renta-feedback-2026":
-        return JSONResponse({"error": "unauthorized"}, status_code=401)
-
-    entries = []
-    try:
-        with open("/tmp/feedback.json", "r") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    entries.append(json.loads(line))
-    except FileNotFoundError:
-        pass
-
-    return JSONResponse({"feedback": entries, "count": len(entries)})
 
 
 @app.api_route("/friends/renta", methods=["GET"])
 @app.api_route("/friends/renta/", methods=["GET"])
 @app.api_route("/", methods=["GET"])
 async def serve_app(request: Request):
-    print(f"SERVE_APP hit: path={request.url.path}", flush=True)
     if not _check_auth(request):
         return RedirectResponse(url=LOGIN_URL, status_code=302)
     return HTMLResponse(_index_html)

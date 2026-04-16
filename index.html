@@ -8,32 +8,32 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 /* ============================================================
-   CANDY PASTEL THEME
+   WARM INTERNATIONAL INVESTMENT THEME
    ============================================================ */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg-start: #FFF5EE;
-  --bg-end: #F0E6FF;
+  --bg-start: #FAF7F2;
+  --bg-end: #F5F0E8;
   --white: #FFFFFF;
-  --lavender: #7C6FE0;
-  --lavender-light: #9B91E8;
-  --lavender-bg: #F3F1FD;
-  --peach: #FF9F7C;
-  --peach-light: #FFB99A;
-  --peach-bg: #FFF0EB;
-  --mint: #6ECFB2;
-  --mint-light: #8EDAC5;
-  --mint-bg: #EDFAF5;
-  --rose: #FF8FA3;
-  --rose-light: #FFB0BF;
-  --rose-bg: #FFF0F3;
-  --text: #2D2B55;
-  --text-medium: #5B5880;
-  --text-light: #9391B0;
-  --shadow: rgba(124, 111, 224, 0.1);
-  --shadow-lg: rgba(124, 111, 224, 0.15);
-  --border: #E8E6F0;
+  --lavender: #B8860B;
+  --lavender-light: #D4A832;
+  --lavender-bg: #FBF7EE;
+  --peach: #C47D3E;
+  --peach-light: #D4944F;
+  --peach-bg: #FDF5ED;
+  --mint: #6B8F5E;
+  --mint-light: #84A876;
+  --mint-bg: #F2F7EF;
+  --rose: #B85C4A;
+  --rose-light: #CC7A6A;
+  --rose-bg: #FBF0ED;
+  --text: #3A3226;
+  --text-medium: #6B5F4E;
+  --text-light: #9A8E7C;
+  --shadow: rgba(139, 119, 80, 0.1);
+  --shadow-lg: rgba(139, 119, 80, 0.15);
+  --border: #E8E0D4;
 }
 
 body {
@@ -757,16 +757,39 @@ footer a { color: var(--lavender); text-decoration: none; }
         <strong>Think of it like this:</strong> Spain is like the US with states -- each region has its own property transfer tax rate. Madrid is cheapest at 6%, while Valencia and Catalonia charge 10%. On a 280K property, that's an 11,200 EUR difference just in tax!
       </div>
 
-      <div class="input-group">
+      <div class="input-group full">
+        <label>Rental Strategy</label>
+        <div class="input-wrap">
+          <select id="rentalType" onchange="onRentalTypeChange()">
+            <option value="longterm">Long-term rental (12+ months)</option>
+            <option value="shortterm">Short-term / Airbnb</option>
+            <option value="midterm">Mid-term (1-12 months)</option>
+          </select>
+          <button class="help-bubble" onclick="toggleEli5('eli5-rentaltype')">?</button>
+        </div>
+      </div>
+      <div class="eli5" id="eli5-rentaltype">
+        <strong>Think of it like this:</strong> Airbnb can earn more per night but has higher vacancy, bigger management costs, and Spain has strict rules (some cities ban it!). Long-term tenants are steady and low-hassle. Mid-term is the middle ground -- furnished rentals to digital nomads.
+      </div>
+
+      <div class="input-group" id="monthlyRentGroup">
         <label>Monthly Rent</label>
         <div class="input-wrap">
           <span class="currency-label" data-currency>EUR</span>
-          <input type="number" id="monthlyRent" value="1400" min="0" step="50" onchange="recalculate()">
+          <input type="number" id="monthlyRent" value="1400" min="0" step="50" onchange="onRentInput('monthly')">
+          <button class="help-bubble" onclick="toggleEli5('eli5-rent')">?</button>
+        </div>
+      </div>
+      <div class="input-group" id="nightlyRateGroup" style="display:none">
+        <label>Average Nightly Rate</label>
+        <div class="input-wrap">
+          <span class="currency-label" data-currency>EUR</span>
+          <input type="number" id="nightlyRate" value="95" min="0" step="5" onchange="onRentInput('nightly')">
           <button class="help-bubble" onclick="toggleEli5('eli5-rent')">?</button>
         </div>
       </div>
       <div class="eli5" id="eli5-rent">
-        <strong>Think of it like this:</strong> What you'd charge tenants per month. Check Idealista or Fotocasa for real comps in your area. Be honest with yourself -- overestimating rent is the #1 mistake new investors make.
+        <strong>Think of it like this:</strong> For long-term, enter what you'd charge per month (check Idealista or Fotocasa). For Airbnb, enter your average nightly rate (check AirDNA or Mashvisor). Be honest -- overestimating income is the #1 mistake new investors make.
       </div>
 
       <div class="input-group">
@@ -779,11 +802,19 @@ footer a { color: var(--lavender); text-decoration: none; }
           <button class="help-bubble" onclick="toggleEli5('eli5-newbuild')">?</button>
         </div>
       </div>
-      <div class="input-group">
-        <label>Occupancy Rate: <span id="occupancyVal" class="current">85%</span></label>
+      <div class="input-group" id="occupancyPctGroup">
+        <label>Occupancy Rate: <span id="occupancyVal" class="current">90%</span></label>
         <div class="input-wrap" style="flex-direction:column;align-items:stretch;gap:2px">
-          <input type="range" id="occupancy" min="0" max="100" value="85" oninput="document.getElementById('occupancyVal').textContent=this.value+'%'; recalculate()">
+          <input type="range" id="occupancy" min="0" max="100" value="90" oninput="onOccupancySlider()">
           <div class="range-labels"><span>0%</span><span>100%</span></div>
+        </div>
+        <button class="help-bubble" onclick="toggleEli5('eli5-occupancy')" style="position:absolute;top:0;right:0">?</button>
+      </div>
+      <div class="input-group" id="occupancyNightsGroup" style="display:none">
+        <label>Nights Booked / Year: <span id="occupancyNightsVal" class="current">220</span></label>
+        <div class="input-wrap">
+          <input type="number" id="occupancyNights" value="220" min="0" max="365" step="5" onchange="onOccupancyInput('nights')">
+          <span style="font-size:0.85rem;color:var(--text-light)">of 365</span>
         </div>
         <button class="help-bubble" onclick="toggleEli5('eli5-occupancy')" style="position:absolute;top:0;right:0">?</button>
       </div>
@@ -800,26 +831,12 @@ footer a { color: var(--lavender); text-decoration: none; }
       </button>
       <div class="collapsible" id="propDetails">
         <div class="input-group">
-          <label>Rental Type</label>
-          <div class="input-wrap">
-            <select id="rentalType" onchange="recalculate()">
-              <option value="longterm">Long-term (12+ months)</option>
-              <option value="shortterm">Short-term / Airbnb</option>
-              <option value="midterm">Mid-term (1-12 months)</option>
-            </select>
-            <button class="help-bubble" onclick="toggleEli5('eli5-rentaltype')">?</button>
-          </div>
-        </div>
-        <div class="input-group">
           <label>Annual Appreciation: <span id="appreciationVal" class="current">2%</span></label>
           <div style="position:relative">
             <input type="range" id="appreciation" min="0" max="10" value="2" step="0.5" oninput="document.getElementById('appreciationVal').textContent=this.value+'%'; recalculate()">
             <div class="range-labels"><span>0%</span><span>10%</span></div>
           </div>
           <button class="help-bubble" onclick="toggleEli5('eli5-appreciation')" style="position:absolute;top:0;right:0">?</button>
-        </div>
-        <div class="eli5" id="eli5-rentaltype">
-          <strong>Think of it like this:</strong> Airbnb can earn more per night but has higher vacancy, bigger management costs, and Spain has strict rules (some cities ban it!). Long-term tenants are steady and low-hassle. Mid-term is the middle ground -- furnished rentals to digital nomads.
         </div>
         <div class="eli5" id="eli5-appreciation">
           <strong>How fast does property value grow?</strong> Spanish property has historically appreciated 1-3% per year on average. Major cities (Madrid, Barcelona) trend higher. Rural and coastal areas can be flat or volatile. 2% is a conservative default. Don't count on appreciation -- treat it as a bonus.
@@ -839,9 +856,19 @@ footer a { color: var(--lavender); text-decoration: none; }
 
       <!-- Mortgage section (collapsible) -->
       <button class="section-toggle" id="mortgageToggle" onclick="toggleSection('mortgage')">
-        <span class="arrow">&#9654;</span> Mortgage (optional)
+        <span class="arrow">&#9654;</span> Mortgage
       </button>
       <div class="collapsible" id="mortgage">
+        <div class="input-group full">
+          <label>Financing</label>
+          <div class="input-wrap">
+            <select id="mortgageEnabled" onchange="onMortgageToggle()">
+              <option value="yes">With mortgage</option>
+              <option value="no">No mortgage (cash purchase)</option>
+            </select>
+          </div>
+        </div>
+        <div id="mortgageFields">
         <div class="input-group">
           <label>Loan-to-Value (LTV)</label>
           <div class="input-wrap">
@@ -874,6 +901,7 @@ footer a { color: var(--lavender); text-decoration: none; }
         </div>
         <div class="eli5" id="eli5-mortterm">
           <strong>How long to pay it off.</strong> Non-residents typically get 15-25 year terms. Most banks cap at age 70-75 at maturity. Longer terms mean lower monthly payments but more interest paid overall. 20 years is the sweet spot for most buyers.
+        </div>
         </div>
       </div>
 
@@ -982,17 +1010,25 @@ footer a { color: var(--lavender); text-decoration: none; }
     <div class="input-grid">
       <div class="input-group">
         <label>Initial Lump Sum</label>
-        <div class="input-wrap">
+        <div class="input-wrap" style="flex-wrap:wrap;gap:4px">
+          <select id="lumpMode" onchange="onLumpModeChange()" style="width:auto;min-width:0;flex:0 0 auto;padding:6px 8px;font-size:0.85rem">
+            <option value="auto">Auto (from down payment)</option>
+            <option value="manual">Manual</option>
+          </select>
           <span class="currency-label" data-currency>EUR</span>
-          <input type="number" id="initialInvestment" value="" min="0" step="1000" onchange="recalculate()" placeholder="auto-calculated">
+          <input type="number" id="initialInvestment" value="" min="0" step="1000" onchange="document.getElementById('lumpMode').value='manual'; recalculate()" placeholder="auto">
           <button class="help-bubble" onclick="toggleEli5('eli5-lump')">?</button>
         </div>
       </div>
       <div class="input-group">
         <label>Monthly Contribution</label>
-        <div class="input-wrap">
+        <div class="input-wrap" style="flex-wrap:wrap;gap:4px">
+          <select id="contribMode" onchange="onContribModeChange()" style="width:auto;min-width:0;flex:0 0 auto;padding:6px 8px;font-size:0.85rem">
+            <option value="auto">Auto (from mortgage)</option>
+            <option value="manual">Manual</option>
+          </select>
           <span class="currency-label" data-currency>EUR</span>
-          <input type="number" id="monthlyContribution" value="" min="0" step="100" onchange="recalculate()" placeholder="auto-calculated">
+          <input type="number" id="monthlyContribution" value="" min="0" step="100" onchange="document.getElementById('contribMode').value='manual'; recalculate()" placeholder="auto">
           <button class="help-bubble" onclick="toggleEli5('eli5-monthly')">?</button>
         </div>
       </div>
@@ -1063,7 +1099,7 @@ footer a { color: var(--lavender); text-decoration: none; }
       <div class="input-group">
         <label>Tax Residency</label>
         <div class="input-wrap">
-          <select id="taxResidency" onchange="recalculate()" oninput="recalculate()">
+          <select id="taxResidency" onchange="onTaxResidencyChange()">
             <option value="us_abroad">US Citizen (living abroad)</option>
             <option value="us_domestic">US Citizen (living in US)</option>
             <option value="eu">EU/EEA Resident</option>
@@ -1297,7 +1333,7 @@ const CURRENCY_DECIMALS = { JPY: 0, SEK: 0, NOK: 0, DKK: 0, CZK: 0 }; // currenc
 let chartMode = 'cumulative';
 let mainChart = null;
 // IDs of monetary input fields that should be converted when currency changes
-const MONETARY_INPUTS = ['purchasePrice', 'monthlyRent', 'communityFees', 'insurance', 'gestorFee', 'initialInvestment', 'monthlyContribution', 'rentSavings'];
+const MONETARY_INPUTS = ['purchasePrice', 'monthlyRent', 'nightlyRate', 'communityFees', 'insurance', 'gestorFee', 'initialInvestment', 'monthlyContribution', 'rentSavings'];
 
 /* ============================================================
    UTILITY FUNCTIONS
@@ -1305,6 +1341,104 @@ const MONETARY_INPUTS = ['purchasePrice', 'monthlyRent', 'communityFees', 'insur
 
 function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
 function pct(id) { return val(id) / 100; }
+
+// Rent mode: sync between monthly and nightly
+function onRentInput(source) {
+  if (source === 'nightly') {
+    document.getElementById('monthlyRent').value = Math.round(val('nightlyRate') * 30.4);
+  } else {
+    document.getElementById('nightlyRate').value = Math.round(val('monthlyRent') / 30.4);
+  }
+  recalculate();
+}
+
+// Rental type change: toggle inputs and set defaults
+function onRentalTypeChange() {
+  const type = document.getElementById('rentalType').value;
+  const monthlyGroup = document.getElementById('monthlyRentGroup');
+  const nightlyGroup = document.getElementById('nightlyRateGroup');
+  const occPctGroup = document.getElementById('occupancyPctGroup');
+  const occNightsGroup = document.getElementById('occupancyNightsGroup');
+  const mgmtSlider = document.getElementById('mgmtFee');
+  const mgmtLabel = document.getElementById('mgmtFeeVal');
+
+  if (type === 'shortterm') {
+    monthlyGroup.style.display = 'none';
+    nightlyGroup.style.display = '';
+    occPctGroup.style.display = 'none';
+    occNightsGroup.style.display = '';
+    // Airbnb defaults
+    if (!nightlyGroup.dataset.userSet) {
+      document.getElementById('nightlyRate').value = 95;
+      document.getElementById('occupancyNights').value = 220;
+      document.getElementById('occupancy').value = Math.round(220 / 365 * 100);
+      document.getElementById('monthlyRent').value = Math.round(95 * 30.4);
+    }
+    if (mgmtSlider) { mgmtSlider.value = 25; mgmtLabel.textContent = '25%'; }
+    updateOccupancyLabel();
+  } else {
+    monthlyGroup.style.display = '';
+    nightlyGroup.style.display = 'none';
+    occPctGroup.style.display = '';
+    occNightsGroup.style.display = 'none';
+    // Long-term defaults
+    if (type === 'longterm') {
+      document.getElementById('occupancy').value = 90;
+      if (mgmtSlider) { mgmtSlider.value = 10; mgmtLabel.textContent = '10%'; }
+    } else { // midterm
+      document.getElementById('occupancy').value = 80;
+      if (mgmtSlider) { mgmtSlider.value = 15; mgmtLabel.textContent = '15%'; }
+    }
+    updateOccupancyLabel();
+  }
+  recalculate();
+}
+
+// Occupancy inputs
+function onOccupancySlider() {
+  const pctVal = val('occupancy');
+  document.getElementById('occupancyNights').value = Math.round(pctVal / 100 * 365);
+  updateOccupancyLabel();
+  recalculate();
+}
+
+function onOccupancyInput(source) {
+  if (source === 'nights') {
+    const nights = val('occupancyNights');
+    document.getElementById('occupancy').value = Math.round(nights / 365 * 100);
+  }
+  updateOccupancyLabel();
+  recalculate();
+}
+
+function updateOccupancyLabel() {
+  const pctVal = val('occupancy');
+  const nights = val('occupancyNights') || Math.round(pctVal / 100 * 365);
+  document.getElementById('occupancyVal').textContent = pctVal + '%';
+  document.getElementById('occupancyNightsVal').textContent = nights;
+}
+
+// Mortgage toggle
+function onMortgageToggle() {
+  const enabled = document.getElementById('mortgageEnabled').value === 'yes';
+  document.getElementById('mortgageFields').style.display = enabled ? '' : 'none';
+  if (!enabled) {
+    document.getElementById('ltv').value = 0;
+  } else {
+    document.getElementById('ltv').value = 60;
+  }
+  recalculate();
+}
+
+// Investment lump sum / contribution auto/manual
+function onLumpModeChange() {
+  recalculate();
+}
+
+function onContribModeChange() {
+  recalculate();
+}
+
 // Get value in EUR (converts from display currency to EUR)
 function valEur(id) {
   const raw = val(id);
@@ -1537,10 +1671,20 @@ function runProjection() {
 
   // Auto-calculate investment lump sum and monthly contribution
   const cashOutOfPocket = downPayment + closing.total;
+  const lumpAuto = document.getElementById('lumpMode').value === 'auto';
+  const contribAuto = document.getElementById('contribMode').value === 'auto';
   const initialInvEl = document.getElementById('initialInvestment');
   const monthlyContEl = document.getElementById('monthlyContribution');
+
+  if (lumpAuto) {
+    initialInvEl.value = Math.round(cashOutOfPocket);
+    initialInvEl.readOnly = true;
+    initialInvEl.style.opacity = '0.7';
+  } else {
+    initialInvEl.readOnly = false;
+    initialInvEl.style.opacity = '1';
+  }
   let initialInvestment = valEur('initialInvestment') || cashOutOfPocket;
-  if (!initialInvEl.value) initialInvEl.placeholder = fmtNum(Math.round(cashOutOfPocket));
 
   // Year-by-year projection
   const propertyData = [];
@@ -1603,8 +1747,16 @@ function runProjection() {
     cumulativePropertyNet += netCashflow;
 
     // Market alternative
-    const monthlyContribution = valEur('monthlyContribution') || Math.max(0, mortgagePayment / 12);
-    if (!monthlyContEl.value) monthlyContEl.placeholder = fmtNum(Math.round(Math.max(0, monthlyMortgage)));
+    const autoMonthlyContrib = Math.max(0, monthlyMortgage);
+    if (contribAuto) {
+      monthlyContEl.value = Math.round(autoMonthlyContrib);
+      monthlyContEl.readOnly = true;
+      monthlyContEl.style.opacity = '0.7';
+    } else {
+      monthlyContEl.readOnly = false;
+      monthlyContEl.style.opacity = '1';
+    }
+    const monthlyContribution = valEur('monthlyContribution') || autoMonthlyContrib;
     const monthlyReturn = Math.pow(1 + expectedReturn, 1/12) - 1;
     for (let m = 0; m < 12; m++) {
       marketBalance = marketBalance * (1 + monthlyReturn) + monthlyContribution;
@@ -2000,9 +2152,97 @@ async function fetchFxRates() {
   }
 }
 
+// Tax residency presets
+function onTaxResidencyChange() {
+  const res = document.getElementById('taxResidency').value;
+  const bracket = document.getElementById('usBracket');
+  const magi = document.getElementById('usMagi');
+  const filing = document.getElementById('filingStatus');
+
+  if (res === 'us_abroad') {
+    bracket.value = '22'; magi.value = 180000; filing.value = 'single';
+  } else if (res === 'us_domestic') {
+    bracket.value = '24'; magi.value = 200000; filing.value = 'mfj';
+  } else if (res === 'eu') {
+    bracket.value = '0'; magi.value = 0; filing.value = 'single';
+  } else {
+    bracket.value = '0'; magi.value = 0; filing.value = 'single';
+  }
+  recalculate();
+}
+
+// --- Cookie persistence ---
+const PERSIST_INPUTS = [
+  'purchasePrice', 'region', 'rentalType', 'monthlyRent', 'nightlyRate',
+  'newBuild', 'occupancy', 'occupancyNights', 'appreciation', 'mgmtFee',
+  'mortgageEnabled', 'ltv', 'mortgageRate', 'mortgageTerm',
+  'communityFees', 'insurance', 'maintenancePct', 'gestorFee',
+  'livingSituation', 'rentSavings', 'monthsLiving',
+  'lumpMode', 'initialInvestment', 'contribMode', 'monthlyContribution',
+  'investmentVehicle', 'expectedReturn', 'investmentCGT',
+  'taxResidency', 'usBracket', 'usMagi', 'buildingPct', 'filingStatus',
+  'projectionYears'
+];
+
+function saveSettings() {
+  const data = {};
+  PERSIST_INPUTS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  try {
+    localStorage.setItem('renta_settings', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadSettings() {
+  let data;
+  try {
+    data = JSON.parse(localStorage.getItem('renta_settings'));
+  } catch(e) { return false; }
+  if (!data) return false;
+
+  PERSIST_INPUTS.forEach(id => {
+    if (data[id] !== undefined) {
+      const el = document.getElementById(id);
+      if (el) el.value = data[id];
+    }
+  });
+
+  // Restore UI state based on loaded values
+  const type = document.getElementById('rentalType').value;
+  if (type === 'shortterm') {
+    document.getElementById('monthlyRentGroup').style.display = 'none';
+    document.getElementById('nightlyRateGroup').style.display = '';
+    document.getElementById('occupancyPctGroup').style.display = 'none';
+    document.getElementById('occupancyNightsGroup').style.display = '';
+  }
+  const mortEnabled = document.getElementById('mortgageEnabled');
+  if (mortEnabled && mortEnabled.value === 'no') {
+    document.getElementById('mortgageFields').style.display = 'none';
+  }
+
+  // Update slider labels
+  const appEl = document.getElementById('appreciation');
+  if (appEl) document.getElementById('appreciationVal').textContent = appEl.value + '%';
+  const mgmtEl = document.getElementById('mgmtFee');
+  if (mgmtEl) document.getElementById('mgmtFeeVal').textContent = mgmtEl.value + '%';
+  updateOccupancyLabel();
+
+  return true;
+}
+
+// Hook into recalculate to auto-save
+const _origRecalculate = recalculate;
+recalculate = function() {
+  _origRecalculate();
+  saveSettings();
+};
+
 // Boot
 document.addEventListener('DOMContentLoaded', () => {
   fetchFxRates();
+  loadSettings();
   recalculate();
 });
 </script>
