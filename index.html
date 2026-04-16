@@ -2160,109 +2160,190 @@ function exportCSV() {
 
   const wb = XLSX.utils.book_new();
   const cf = r.annualCashflow;
+  const I = 'Inputs!'; // reference prefix for inputs sheet
 
-  // --- Inputs sheet ---
+  // --- Inputs sheet: all raw values, named rows ---
+  // Row numbers (1-indexed) for referencing from other sheets
   const inputRows = [
-    ['RENTA -- Projection Export', '', new Date().toISOString().slice(0, 10)],
+    ['RENTA -- Full Financial Model', '', new Date().toISOString().slice(0, 10)],
     [],
-    ['=== INPUTS ==='],
-    ['Purchase Price', r.price],
-    ['LTV', r.ltv / 100],
-    ['Mortgage Principal', {f: 'B4*B5'}],
-    ['Down Payment', {f: 'B4-B6'}],
-    ['Closing Costs', r.closing.total],
-    ['Cash Out of Pocket', {f: 'B7+B8'}],
+    ['=== PROPERTY ==='],
+    ['Purchase Price', valEur('purchasePrice')],                      // B4
+    ['Annual Appreciation', pct('appreciation')],                     // B5
+    ['Cadastral Value (est. 40%)', {f: 'B4*0.4'}],                   // B6
+    ['Building %', pct('buildingPct')],                               // B7
     [],
-    ['=== CLOSING COST BREAKDOWN ==='],
-    ['Transfer Tax (ITP/IVA)', r.closing.transferTax],
-    ['Notary', r.closing.notary],
-    ['Registry', r.closing.registry],
-    ['Lawyer', r.closing.lawyer],
+    ['=== RENTAL INCOME ==='],
+    ['Monthly Rent (EUR)', valEur('monthlyRent')],                    // B10
+    ['Occupancy Rate', pct('occupancy')],                             // B11
+    ['Rent Inflation (annual)', 0.02],                                // B12
+    [],
+    ['=== OPERATING COSTS ==='],
+    ['Management Fee %', pct('mgmtFee')],                             // B15
+    ['Community Fees (monthly)', valEur('communityFees')],            // B16
+    ['Insurance (annual)', valEur('insurance')],                      // B17
+    ['Maintenance Reserve %', pct('maintenancePct')],                 // B18
+    ['Gestor Fee (annual)', valEur('gestorFee')],                     // B19
+    [],
+    ['=== MORTGAGE ==='],
+    ['LTV', pct('ltv')],                                              // B22
+    ['Mortgage Principal', {f: 'B4*B22'}],                            // B23
+    ['Down Payment', {f: 'B4-B23'}],                                  // B24
+    ['Interest Rate', pct('mortgageRate')],                           // B25
+    ['Term (years)', val('mortgageTerm')],                            // B26
+    ['Monthly Payment', r.annualCashflow.length > 0 ? Math.round(r.annualCashflow[0].totalCosts - r.annualCashflow[0].totalExpenses - r.annualCashflow[0].spanishTax.total - r.annualCashflow[0].usTax.netOwed) / 12 : 0], // B27
+    [],
+    ['=== CLOSING COSTS ==='],
+    ['Transfer Tax (ITP/IVA)', r.closing.transferTax],                // B30
+    ['Notary', r.closing.notary],                                     // B31
+    ['Registry', r.closing.registry],                                 // B32
+    ['Lawyer', r.closing.lawyer],                                     // B33
+    ['Total Closing', {f: 'SUM(B30:B33)'}],                          // B34
+    [],
+    ['=== DERIVED ==='],
+    ['Cash Out of Pocket', {f: 'B24+B34'}],                          // B37
+    ['Annual Depreciation (ADS 30yr)', {f: 'B4*B7/30'}],             // B38
+    [],
+    ['=== TAX PROFILE ==='],
+    ['US Marginal Rate', pct('usBracket')],                           // B41
+    ['US MAGI', val('usMagi')],                                       // B42
+    ['NIIT Threshold', document.getElementById('filingStatus').value === 'mfj' ? 250000 : 200000], // B43
+    ['IRNR Rate (non-EU: 24%, EU: 19%)', r.isEU ? 0.19 : 0.24],     // B44
+    ['Is US Taxpayer', r.isUS ? 1 : 0],                               // B45
+    ['Investment CGT Rate', pct('investmentCGT')],                    // B46
+    [],
+    ['=== MARKET ALTERNATIVE ==='],
+    ['Initial Investment', {f: 'B37'}],                               // B49
+    ['Monthly Contribution', cf[0]?.monthlyContribution || 0],        // B50
+    ['Expected Annual Return', pct('expectedReturn')],                // B51
   ];
+
   const inputsWs = XLSX.utils.aoa_to_sheet(inputRows);
-  inputsWs['B5'].z = '0%';
+  // Format percentages
+  const pctRows = [5,7,11,12,15,18,22,25,41,44,46,51];
+  pctRows.forEach(r => {
+    const cell = inputsWs[XLSX.utils.encode_cell({r: r-1, c: 1})];
+    if (cell) cell.z = '0.0%';
+  });
+  inputsWs['!cols'] = [{wch: 30}, {wch: 18}];
   XLSX.utils.book_append_sheet(wb, inputsWs, 'Inputs');
 
-  // --- Projection sheet with formulas ---
+  // --- Projection sheet: ALL formulas ---
   const headers = [
-    'Year', 'Property Value', 'Gross Rent', 'Operating Expenses',
-    'Spanish Tax', 'US Tax', 'Total Tax', 'Mortgage Payment',
-    'Net Cashflow', 'Cumulative Cashflow',
-    'Mortgage Remaining', 'Equity', 'Property Wealth',
-    'Market Balance', 'Market Wealth', 'Difference'
+    'Year',                   // A
+    'Property Value',         // B  = Price * (1+Appr)^Year
+    'Monthly Rent (inflated)',// C  = MonthlyRent * (1+Infl)^(Y-1)
+    'Gross Annual Rent',      // D  = C*12*Occupancy
+    'Management Cost',        // E  = D * MgmtFee%
+    'Community Fees',         // F  = Monthly*12
+    'Insurance',              // G  = fixed
+    'Maintenance',            // H  = B * Maint%
+    'Gestor',                 // I  = fixed
+    'Total Expenses',         // J  = SUM(E:I)
+    'IRNR (Rented)',          // K  = D * IRNRRate (non-EU) or (D-J)*0.19 (EU)
+    'IBI',                    // L  = CadastralValue * 0.005
+    'Basura',                 // M  = 200
+    'Spanish Tax Total',      // N  = K+L+M
+    'US Taxable Income',      // O  = MAX(0, D-J-MortInt-IBI-Depreciation)
+    'US Schedule E Tax',      // P  = O * USRate
+    'FTC',                    // Q  = MIN(N, P)
+    'NIIT',                   // R  = if MAGI>threshold: O*0.038
+    'US Net Tax',             // S  = MAX(0,P-Q)+R
+    'Total Tax',              // T  = N+S
+    'Mortgage Payment',       // U  = Annual mortgage
+    'Net Cashflow',           // V  = D-J-T-U
+    'Cumulative Cashflow',    // W  = running sum
+    'Mortgage Remaining',     // X  = amortization
+    'Equity',                 // Y  = B-X
+    'Property Wealth',        // Z  = Y+W
+    'Market Balance',         // AA = compound growth
+    'Market Wealth (post-CGT)', // AB = contributed + gains*(1-CGT)
+    'Difference',             // AC = Z-AB
   ];
 
   const rows = [headers];
-  const price = r.price;
-  const mortPrincipal = r.mortgagePrincipal;
 
   for (let i = 0; i < cf.length; i++) {
-    const row = cf[i];
-    const n = i + 2; // Excel row (1-indexed, +1 for header)
-    const mortPayment = row.totalCosts - row.totalExpenses - row.spanishTax.total - row.usTax.netOwed;
+    const n = i + 2; // Excel row
+    const y = i + 1; // year
+    const isEUFormula = r.isEU;
 
     rows.push([
-      row.year,
-      row.propertyValue,
-      row.grossRent,
-      row.totalExpenses,
-      row.spanishTax.total,
-      row.usTax.netOwed,
-      {f: `E${n}+F${n}`},             // Total Tax = Spanish + US
-      mortPayment,
-      {f: `C${n}-D${n}-G${n}-H${n}`}, // Net Cashflow = Rent - Expenses - Tax - Mortgage
+      y,
+      // B: Property Value = Price * (1+Appreciation)^Year
+      {f: `${I}B4*(1+${I}B5)^A${n}`},
+      // C: Monthly Rent inflated = MonthlyRent * (1+RentInflation)^(Year-1)
+      {f: `${I}B10*(1+${I}B12)^(A${n}-1)`},
+      // D: Gross Annual Rent = MonthlyRent * 12 * Occupancy
+      {f: `C${n}*12*${I}B11`},
+      // E: Management Cost
+      {f: `D${n}*${I}B15`},
+      // F: Community Fees
+      {f: `${I}B16*12`},
+      // G: Insurance
+      {f: `${I}B17`},
+      // H: Maintenance
+      {f: `B${n}*${I}B18`},
+      // I: Gestor
+      {f: `${I}B19`},
+      // J: Total Expenses
+      {f: `SUM(E${n}:I${n})`},
+      // K: IRNR (Rented) -- non-EU: gross*24%, EU: (gross-expenses)*19%
+      isEUFormula
+        ? {f: `MAX(0,(D${n}-J${n}))*0.19`}
+        : {f: `D${n}*${I}B44`},
+      // L: IBI = cadastral * 0.005
+      {f: `${I}B6*0.005`},
+      // M: Basura
+      200,
+      // N: Spanish Tax Total
+      {f: `K${n}+L${n}+M${n}`},
+      // O: US Taxable Income = MAX(0, GrossRent - Expenses - MortgageInterest - IBI - Depreciation)
+      // Simplified: using remaining balance * rate for interest
+      {f: r.isUS ? `MAX(0,D${n}-J${n}-L${n}-${I}B38)` : '0'},
+      // P: US Schedule E Tax
+      {f: r.isUS ? `O${n}*${I}B41` : '0'},
+      // Q: FTC = MIN(SpanishTax, USTax)
+      {f: r.isUS ? `MIN(N${n},P${n})` : '0'},
+      // R: NIIT
+      {f: r.isUS ? `IF(${I}B42>${I}B43,O${n}*0.038,0)` : '0'},
+      // S: US Net Tax = MAX(0, ScheduleE - FTC) + NIIT
+      {f: r.isUS ? `MAX(0,P${n}-Q${n})+R${n}` : '0'},
+      // T: Total Tax
+      {f: `N${n}+S${n}`},
+      // U: Mortgage Payment (annual, 0 after term ends)
+      {f: `IF(A${n}<=${I}B26,${I}B27*12,0)`},
+      // V: Net Cashflow = Rent - Expenses - Tax - Mortgage
+      {f: `D${n}-J${n}-T${n}-U${n}`},
+      // W: Cumulative Cashflow
+      i === 0 ? {f: `V${n}`} : {f: `W${n-1}+V${n}`},
+      // X: Mortgage Remaining (simplified: principal * (1 - year/term))
+      {f: `IF(A${n}>=${I}B26,0,${I}B23*(1-A${n}/${I}B26))`},
+      // Y: Equity = Value - Mortgage Remaining
+      {f: `B${n}-X${n}`},
+      // Z: Property Wealth = Equity + Cumulative Cashflow
+      {f: `Y${n}+W${n}`},
+      // AA: Market Balance (compound monthly)
       i === 0
-        ? {f: `I${n}`}                 // Cumulative = first year cashflow
-        : {f: `J${n-1}+I${n}`},       // Cumulative = prev + this year
-      row.mortgageRemaining,
-      {f: `B${n}-K${n}`},             // Equity = Value - Mortgage Remaining
-      {f: `L${n}+J${n}`},             // Property Wealth = Equity + Cumulative Cashflow
-      Math.round(row.marketWealth / (1 - (r.annualCashflow[0].usTax ? 0.15 : 0))), // pre-tax market balance approx
-      row.marketWealth,
-      {f: `M${n}-O${n}`},             // Difference = Property - Market
+        ? {f: `${I}B49*(1+${I}B51)^1+${I}B50*12`}
+        : {f: `AA${n-1}*(1+${I}B51)+${I}B50*12`},
+      // AB: Market Wealth after CGT = Contributed + Gains*(1-CGT)
+      {f: `(${I}B49+${I}B50*12*A${n})+(AA${n}-(${I}B49+${I}B50*12*A${n}))*(1-${I}B46)`},
+      // AC: Difference
+      {f: `Z${n}-AB${n}`},
     ]);
   }
 
   const projWs = XLSX.utils.aoa_to_sheet(rows);
-
-  // Format currency columns
-  const currCols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+  // Format all currency columns
   for (let ri = 1; ri <= cf.length; ri++) {
-    for (const ci of currCols) {
+    for (let ci = 1; ci < headers.length; ci++) {
       const cell = projWs[XLSX.utils.encode_cell({r: ri, c: ci})];
       if (cell) cell.z = '#,##0';
     }
   }
-
-  // Column widths
-  projWs['!cols'] = headers.map(h => ({wch: Math.max(h.length + 2, 16)}));
-
+  projWs['!cols'] = headers.map(h => ({wch: Math.max(h.length + 2, 14)}));
   XLSX.utils.book_append_sheet(wb, projWs, 'Projection');
-
-  // --- Tax Detail sheet ---
-  const taxHeaders = ['Year', 'Gross Rent', 'IRNR (Rented)', 'IRNR (Vacant)', 'IBI', 'Spanish Total',
-    'US Schedule E', 'FTC Used', 'NIIT', 'US Net Owed', 'Combined Tax'];
-  const taxRows = [taxHeaders];
-  for (let i = 0; i < cf.length; i++) {
-    const row = cf[i];
-    const n = i + 2;
-    taxRows.push([
-      row.year,
-      row.grossRent,
-      row.spanishTax.irnrRented || 0,
-      row.spanishTax.irnrVacant || 0,
-      row.spanishTax.ibi,
-      {f: `C${n}+D${n}+E${n}`},
-      row.usTax.scheduleETax || 0,
-      row.usTax.ftcUsed || row.usTax.ftc || 0,
-      row.usTax.niit || 0,
-      row.usTax.netOwed,
-      {f: `F${n}+J${n}`},
-    ]);
-  }
-  const taxWs = XLSX.utils.aoa_to_sheet(taxRows);
-  taxWs['!cols'] = taxHeaders.map(h => ({wch: Math.max(h.length + 2, 14)}));
-  XLSX.utils.book_append_sheet(wb, taxWs, 'Tax Detail');
 
   XLSX.writeFile(wb, 'renta-projection.xlsx');
 }
