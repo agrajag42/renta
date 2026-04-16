@@ -6,6 +6,7 @@
 <title>Renta -- Is Your Property Investment Worth It?</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 /* ============================================================
    WARM INTERNATIONAL INVESTMENT THEME
@@ -2149,42 +2150,116 @@ function renderMathBreakdown(result) {
 }
 
 function exportCSV() {
-  const cf = window._lastResult?.annualCashflow;
-  if (!cf || !cf.length) return;
+  const r = window._lastResult;
+  if (!r || !r.annualCashflow.length) return;
 
+  const wb = XLSX.utils.book_new();
+  const cf = r.annualCashflow;
+
+  // --- Inputs sheet ---
+  const inputRows = [
+    ['RENTA -- Projection Export', '', new Date().toISOString().slice(0, 10)],
+    [],
+    ['=== INPUTS ==='],
+    ['Purchase Price', r.price],
+    ['LTV', r.ltv / 100],
+    ['Mortgage Principal', {f: 'B4*B5'}],
+    ['Down Payment', {f: 'B4-B6'}],
+    ['Closing Costs', r.closing.total],
+    ['Cash Out of Pocket', {f: 'B7+B8'}],
+    [],
+    ['=== CLOSING COST BREAKDOWN ==='],
+    ['Transfer Tax (ITP/IVA)', r.closing.transferTax],
+    ['Notary', r.closing.notary],
+    ['Registry', r.closing.registry],
+    ['Lawyer', r.closing.lawyer],
+  ];
+  const inputsWs = XLSX.utils.aoa_to_sheet(inputRows);
+  inputsWs['B5'].z = '0%';
+  XLSX.utils.book_append_sheet(wb, inputsWs, 'Inputs');
+
+  // --- Projection sheet with formulas ---
   const headers = [
     'Year', 'Property Value', 'Gross Rent', 'Operating Expenses',
-    'Spanish Tax', 'US Tax', 'Net Cashflow', 'Equity',
-    'Mortgage Remaining', 'Cumulative Cashflow',
-    'Property Wealth', 'Market Wealth', 'Difference'
+    'Spanish Tax', 'US Tax', 'Total Tax', 'Mortgage Payment',
+    'Net Cashflow', 'Cumulative Cashflow',
+    'Mortgage Remaining', 'Equity', 'Property Wealth',
+    'Market Balance', 'Market Wealth', 'Difference'
   ];
 
-  let csv = headers.join(',') + '\n';
-  for (const row of cf) {
-    csv += [
+  const rows = [headers];
+  const price = r.price;
+  const mortPrincipal = r.mortgagePrincipal;
+
+  for (let i = 0; i < cf.length; i++) {
+    const row = cf[i];
+    const n = i + 2; // Excel row (1-indexed, +1 for header)
+    const mortPayment = row.totalCosts - row.totalExpenses - row.spanishTax.total - row.usTax.netOwed;
+
+    rows.push([
       row.year,
-      Math.round(row.propertyValue),
-      Math.round(row.grossRent),
-      Math.round(row.totalExpenses),
-      Math.round(row.spanishTax.total),
-      Math.round(row.usTax.netOwed),
-      Math.round(row.netCashflow),
-      Math.round(row.equity),
-      Math.round(row.mortgageRemaining),
-      Math.round(row.cumulativeCashflow),
-      Math.round(row.propertyWealth),
-      Math.round(row.marketWealth),
-      Math.round(row.diff)
-    ].join(',') + '\n';
+      row.propertyValue,
+      row.grossRent,
+      row.totalExpenses,
+      row.spanishTax.total,
+      row.usTax.netOwed,
+      {f: `E${n}+F${n}`},             // Total Tax = Spanish + US
+      mortPayment,
+      {f: `C${n}-D${n}-G${n}-H${n}`}, // Net Cashflow = Rent - Expenses - Tax - Mortgage
+      i === 0
+        ? {f: `I${n}`}                 // Cumulative = first year cashflow
+        : {f: `J${n-1}+I${n}`},       // Cumulative = prev + this year
+      row.mortgageRemaining,
+      {f: `B${n}-K${n}`},             // Equity = Value - Mortgage Remaining
+      {f: `L${n}+J${n}`},             // Property Wealth = Equity + Cumulative Cashflow
+      Math.round(row.marketWealth / (1 - (r.annualCashflow[0].usTax ? 0.15 : 0))), // pre-tax market balance approx
+      row.marketWealth,
+      {f: `M${n}-O${n}`},             // Difference = Property - Market
+    ]);
   }
 
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'renta-projection.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+  const projWs = XLSX.utils.aoa_to_sheet(rows);
+
+  // Format currency columns
+  const currCols = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+  for (let ri = 1; ri <= cf.length; ri++) {
+    for (const ci of currCols) {
+      const cell = projWs[XLSX.utils.encode_cell({r: ri, c: ci})];
+      if (cell) cell.z = '#,##0';
+    }
+  }
+
+  // Column widths
+  projWs['!cols'] = headers.map(h => ({wch: Math.max(h.length + 2, 16)}));
+
+  XLSX.utils.book_append_sheet(wb, projWs, 'Projection');
+
+  // --- Tax Detail sheet ---
+  const taxHeaders = ['Year', 'Gross Rent', 'IRNR (Rented)', 'IRNR (Vacant)', 'IBI', 'Spanish Total',
+    'US Schedule E', 'FTC Used', 'NIIT', 'US Net Owed', 'Combined Tax'];
+  const taxRows = [taxHeaders];
+  for (let i = 0; i < cf.length; i++) {
+    const row = cf[i];
+    const n = i + 2;
+    taxRows.push([
+      row.year,
+      row.grossRent,
+      row.spanishTax.irnrRented || 0,
+      row.spanishTax.irnrVacant || 0,
+      row.spanishTax.ibi,
+      {f: `C${n}+D${n}+E${n}`},
+      row.usTax.scheduleETax || 0,
+      row.usTax.ftcUsed || row.usTax.ftc || 0,
+      row.usTax.niit || 0,
+      row.usTax.netOwed,
+      {f: `F${n}+J${n}`},
+    ]);
+  }
+  const taxWs = XLSX.utils.aoa_to_sheet(taxRows);
+  taxWs['!cols'] = taxHeaders.map(h => ({wch: Math.max(h.length + 2, 14)}));
+  XLSX.utils.book_append_sheet(wb, taxWs, 'Tax Detail');
+
+  XLSX.writeFile(wb, 'renta-projection.xlsx');
 }
 
 /* ============================================================
